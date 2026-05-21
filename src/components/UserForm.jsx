@@ -1,5 +1,6 @@
 import Input from './Input.jsx';
 import Select from './Select.jsx';
+import { technicalSectorByProfile } from '../utils/technicalStages.js';
 
 const technicianProfiles = ['Técnico Mecânica', 'Técnico Usinagem', 'Técnico Elétrica'];
 
@@ -37,12 +38,13 @@ export default function UserForm({ form, setForm, profiles, sectors, clients, em
         options={profiles}
         onChange={(event) => {
           const profile = event.target.value;
+          const technicalSector = technicalSectorByProfile[profile] || '';
           setForm({
             ...form,
             profile,
             linkedClientId: profile === 'Cliente' ? form.linkedClientId : '',
             linkedEmployeeId: profile === 'Cliente' ? '' : form.linkedEmployeeId,
-            sector: technicianProfiles.includes(profile) ? form.sector : profile === 'Cliente' ? '' : form.sector || 'Administrativo',
+            sector: technicalSector || (profile === 'Cliente' ? '' : form.sector || 'Administrativo'),
           });
         }}
       />
@@ -71,7 +73,7 @@ export default function UserForm({ form, setForm, profiles, sectors, clients, em
       {isTechnician ? (
         <Select
           label="Setor"
-          value={form.sector}
+          value={technicalSectorByProfile[form.profile] || form.sector}
           options={sectors.filter((sector) => ['Mecânica', 'Usinagem', 'Elétrica'].includes(sector))}
           onChange={(event) => setForm({ ...form, sector: event.target.value })}
         />

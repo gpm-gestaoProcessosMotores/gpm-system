@@ -1,70 +1,9 @@
 import { STORAGE_KEYS, makeId, readCollection, removeItem, upsertItem, writeCollection } from './storageService.js';
 import { historyService } from './historyService.js';
 import { formatOSCode } from '../utils/validators.js';
+import { getTechnicalSectorByProfile, normalizeTechnicalStages, stageOrder, stageTemplates } from '../utils/technicalStages.js';
 
-export const stageOrder = ['mecanica', 'usinagem', 'eletrica'];
-
-const checklists = {
-  mecanica: [
-    { label: 'Rolamentos verificados', done: false },
-    { label: 'Tampas verificadas', done: false },
-    { label: 'Eixo verificado', done: false },
-    { label: 'Carcaça verificada', done: false },
-    { label: 'Ventilação verificada', done: false },
-    { label: 'Acoplamento verificado', done: false },
-    { label: 'Necessita troca de peças?', done: false },
-  ],
-  usinagem: [
-    { label: 'Eixo necessita usinagem?', done: false },
-    { label: 'Carcaça necessita ajuste?', done: false },
-    { label: 'Tampas precisam de recuperação?', done: false },
-    { label: 'Medidas conferidas?', done: false },
-    { label: 'Peças recuperadas?', done: false },
-    { label: 'Serviço de torno/fresa necessário?', done: false },
-  ],
-  eletrica: [
-    { label: 'Bobinagem verificada', done: false },
-    { label: 'Isolamento testado', done: false },
-    { label: 'Resistência medida', done: false },
-    { label: 'Cabos verificados', done: false },
-    { label: 'Ligação conferida', done: false },
-    { label: 'Teste elétrico realizado', done: false },
-    { label: 'Necessita rebobinamento?', done: false },
-  ],
-};
-
-const stageTemplates = {
-  mecanica: {
-    sector: 'Mecânica',
-    status: 'Pendente',
-    technician: '',
-    startedAt: '',
-    finishedAt: '',
-    report: '',
-    checklist: checklists.mecanica,
-    attachments: [],
-  },
-  usinagem: {
-    sector: 'Usinagem',
-    status: 'Pendente',
-    technician: '',
-    startedAt: '',
-    finishedAt: '',
-    report: '',
-    checklist: checklists.usinagem,
-    attachments: [],
-  },
-  eletrica: {
-    sector: 'Elétrica',
-    status: 'Pendente',
-    technician: '',
-    startedAt: '',
-    finishedAt: '',
-    report: '',
-    checklist: checklists.eletrica,
-    attachments: [],
-  },
-};
+export { stageOrder };
 
 function getStageKeyBySector(sector) {
   const map = {
@@ -91,10 +30,12 @@ function getValidOrders() {
   const validClientIds = new Set(clients.map((client) => client.id));
   const motorById = new Map(motors.map((motor) => [motor.id, motor]));
 
-  return readCollection(STORAGE_KEYS.orders).filter((order) => {
-    const motor = motorById.get(order.motorId);
-    return Boolean(motor && validClientIds.has(order.clientId) && motor.clientId === order.clientId);
-  });
+  return readCollection(STORAGE_KEYS.orders)
+    .filter((order) => {
+      const motor = motorById.get(order.motorId);
+      return Boolean(motor && validClientIds.has(order.clientId) && motor.clientId === order.clientId);
+    })
+    .map((order) => ({ ...order, stages: normalizeTechnicalStages(order.stages) }));
 }
 
 export const osService = {
@@ -120,8 +61,9 @@ export const osService = {
       return orders.filter((order) => order.clientId === user.linkedClientId);
     }
     if (user.profile?.startsWith('Técnico')) {
-      const stageKey = getStageKeyBySector(user.sector);
-      return orders.filter((order) => order.currentSector === user.sector || order.stages?.[stageKey]?.status !== 'Pendente');
+      const userSector = getTechnicalSectorByProfile(user.profile, user.sector);
+      const stageKey = getStageKeyBySector(userSector);
+      return orders.filter((order) => order.currentSector === userSector || order.stages?.[stageKey]?.status !== 'Pendente');
     }
     return orders;
   },
@@ -168,11 +110,12 @@ export const osService = {
           ...stageData,
         },
       };
-      const allDone = stageOrder.every((key) => stages[key].status === 'Concluída');
+      const normalizedStages = normalizeTechnicalStages(stages);
+      const allDone = stageOrder.every((key) => normalizedStages[key].status === 'Concluída');
       updatedOrder = {
         ...order,
-        stages,
-        currentSector: getNextSector(stages),
+        stages: normalizedStages,
+        currentSector: getNextSector(normalizedStages),
         status: allDone ? 'Aguardando orçamento' : 'Em análise técnica',
       };
       return updatedOrder;

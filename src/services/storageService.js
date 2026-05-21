@@ -8,6 +8,7 @@ import {
   initialSectors,
   initialUsers,
 } from '../mocks/initialData.js';
+import { normalizeTechnicalStages } from '../utils/technicalStages.js';
 import { pushCollectionToSupabase } from './supabaseDataService.js';
 
 export const STORAGE_KEYS = {
@@ -23,7 +24,7 @@ export const STORAGE_KEYS = {
   currentUser: 'gpm_current_user',
 };
 
-const STORAGE_VERSION = '6';
+const STORAGE_VERSION = '7';
 
 const initialCollections = {
   [STORAGE_KEYS.users]: initialUsers,
@@ -64,10 +65,12 @@ function cleanupLinkedRecords() {
     const validMotors = motors.filter((motor) => validClientIds.has(motor.clientId));
     const validMotorIds = new Set(validMotors.map((motor) => motor.id));
     const motorById = new Map(validMotors.map((motor) => [motor.id, motor]));
-    const validOrders = orders.filter((order) => {
-      const motor = motorById.get(order.motorId);
-      return Boolean(motor && validClientIds.has(order.clientId) && motor.clientId === order.clientId);
-    });
+    const validOrders = orders
+      .filter((order) => {
+        const motor = motorById.get(order.motorId);
+        return Boolean(motor && validClientIds.has(order.clientId) && motor.clientId === order.clientId);
+      })
+      .map((order) => ({ ...order, stages: normalizeTechnicalStages(order.stages) }));
     const validOrderIds = new Set(validOrders.map((order) => order.id));
     const validBudgets = budgets.filter((budget) => !budget.orderId || validOrderIds.has(budget.orderId));
     const validHistory = history.filter((item) => !item.orderId || validOrderIds.has(item.orderId));
@@ -75,7 +78,7 @@ function cleanupLinkedRecords() {
     if (validMotors.length !== motors.length) {
       persistCleanCollection(STORAGE_KEYS.motors, validMotors);
     }
-    if (validOrders.length !== orders.length) {
+    if (JSON.stringify(validOrders) !== JSON.stringify(orders)) {
       persistCleanCollection(STORAGE_KEYS.orders, validOrders);
     }
     if (validBudgets.length !== budgets.length) {

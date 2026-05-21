@@ -9,12 +9,7 @@ import StatusBadge from '../components/StatusBadge.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { osService, stageOrder } from '../services/osService.js';
 import { formatDateTime } from '../utils/formatters.js';
-
-const sectorByProfile = {
-  'Técnico Mecânica': 'Mecânica',
-  'Técnico Usinagem': 'Usinagem',
-  'Técnico Elétrica': 'Elétrica',
-};
+import { getTechnicalSectorByProfile } from '../utils/technicalStages.js';
 
 export default function TechnicalFlowPage() {
   const { id } = useParams();
@@ -45,7 +40,7 @@ export default function TechnicalFlowPage() {
   }
 
   function canOperate(stageKey) {
-    const allowedSector = sectorByProfile[user?.profile];
+    const allowedSector = getTechnicalSectorByProfile(user?.profile);
     if (!allowedSector) {
       return user?.profile !== 'Gestor';
     }
@@ -94,10 +89,9 @@ export default function TechnicalFlowPage() {
 
   function finishStage(stageKey) {
     const draft = draftStages[stageKey];
-    const allChecked = draft.checklist.every((item) => item.done);
 
-    if (!allChecked || !draft.report.trim()) {
-      window.alert('Conclua o checklist e registre o laudo técnico antes de finalizar.');
+    if (!draft.report.trim()) {
+      window.alert('Descreva o serviço realizado antes de finalizar a etapa.');
       return;
     }
 
@@ -167,17 +161,19 @@ export default function TechnicalFlowPage() {
                 <span>Técnico: {stage.technician || user?.name}</span>
               </div>
 
+              <p className="muted">Os itens abaixo são opcionais. Use a descrição para registrar o serviço feito no motor.</p>
+
               <Checklist
                 items={stage.checklist}
-                readonly={disabled || stage.status === 'Concluída'}
+                readonly={disabled}
                 onChange={(checklist) => updateDraft(stageKey, { checklist })}
               />
 
               <label className="field">
-                <span>Laudo técnico</span>
+                <span>Serviço realizado / laudo técnico</span>
                 <textarea
                   value={stage.report}
-                  disabled={disabled || stage.status === 'Concluída'}
+                  disabled={disabled}
                   onChange={(event) => updateDraft(stageKey, { report: event.target.value })}
                 />
               </label>
@@ -188,7 +184,7 @@ export default function TechnicalFlowPage() {
                 <input
                   type="file"
                   multiple
-                  disabled={disabled || stage.status === 'Concluída'}
+                  disabled={disabled}
                   onChange={(event) => {
                     const fileNames = Array.from(event.target.files || []).map((file) => file.name);
                     updateDraft(stageKey, { attachments: [...stage.attachments, ...fileNames] });
@@ -211,7 +207,7 @@ export default function TechnicalFlowPage() {
                 <Button
                   variant="outline"
                   icon={Save}
-                  disabled={disabled || stage.status === 'Concluída'}
+                  disabled={disabled}
                   onClick={() => saveStage(stageKey)}
                 >
                   Salvar laudo

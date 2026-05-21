@@ -3,7 +3,7 @@ import { formatCNPJ, formatCPF, onlyNumbers } from '../utils/validators.js';
 import Input from './Input.jsx';
 import LoadingButton from './LoadingButton.jsx';
 
-export default function CpfCnpjInput({ value, onChange, onValidate, onSearchCnpj, loading, error }) {
+export default function CpfCnpjInput({ value, onChange, onValidate, onSearchCnpj, loading, error, required = true }) {
   const isCnpj = onlyNumbers(value).length > 11;
 
   function handleChange(event) {
@@ -13,7 +13,7 @@ export default function CpfCnpjInput({ value, onChange, onValidate, onSearchCnpj
 
   return (
     <div className="compound-field">
-      <Input label="CPF/CNPJ" value={value} error={error} onChange={handleChange} placeholder="CPF ou CNPJ" required />
+      <Input label="CPF/CNPJ" value={value} error={error} onChange={handleChange} placeholder="CPF ou CNPJ" required={required} />
       <LoadingButton variant="outline" icon={CheckCircle2} onClick={onValidate}>
         Validar
       </LoadingButton>

@@ -9,6 +9,7 @@ import { clientService } from '../services/clientService.js';
 import { motorService } from '../services/motorService.js';
 import { osService, stageOrder } from '../services/osService.js';
 import { formatDateTime } from '../utils/formatters.js';
+import { getTechnicalSectorByProfile } from '../utils/technicalStages.js';
 import { useState } from 'react';
 
 const sectorRoutes = {
@@ -31,9 +32,10 @@ export default function TechnicalSectorOrderPage({ sectorName, stageKey, title }
   }
 
   const previousIncomplete = stageOrder.slice(0, stageOrder.indexOf(stageKey)).some((key) => order.stages[key].status !== 'Concluída');
-  const wrongSector = order.currentSector !== sectorName && stage.status !== 'Em andamento';
-  const readOnly = user?.profile === 'Administrador' ? false : user?.sector !== sectorName;
-  const disabled = previousIncomplete || wrongSector || readOnly || stage.status === 'Concluída';
+  const wrongSector = order.currentSector !== sectorName && stage.status === 'Pendente';
+  const userSector = getTechnicalSectorByProfile(user?.profile, user?.sector);
+  const readOnly = user?.profile === 'Administrador' ? false : userSector !== sectorName;
+  const disabled = previousIncomplete || wrongSector || readOnly;
 
   function refresh(updated) {
     setOrder(updated);
@@ -72,9 +74,8 @@ export default function TechnicalSectorOrderPage({ sectorName, stageKey, title }
   }
 
   function finishStage() {
-    const allChecked = stage.checklist.every((item) => item.done);
-    if (!allChecked || !stage.report.trim()) {
-      window.alert('Conclua o checklist e registre o laudo técnico antes de finalizar.');
+    if (!stage.report.trim()) {
+      window.alert('Descreva o serviço realizado antes de finalizar a etapa.');
       return;
     }
 
@@ -133,13 +134,14 @@ export default function TechnicalSectorOrderPage({ sectorName, stageKey, title }
       </section>
 
       <Card className="stage-card">
+        <p className="muted">Marque somente os itens que fizerem sentido para esta OS. A descrição escrita do serviço realizado é o registro principal da etapa.</p>
         <Checklist
           items={stage.checklist}
           readonly={disabled}
           onChange={(checklist) => setStage({ ...stage, checklist })}
         />
         <label className="field">
-          <span>Laudo {stage.sector}</span>
+          <span>Serviço realizado / laudo {stage.sector}</span>
           <textarea value={stage.report} disabled={disabled} onChange={(event) => setStage({ ...stage, report: event.target.value })} />
         </label>
         <label className="upload-drop">

@@ -1,4 +1,4 @@
-import { LockKeyhole, LogIn, UserRound } from 'lucide-react';
+import { BadgeCheck, LockKeyhole, LogIn, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import Input from '../components/Input.jsx';
@@ -32,15 +32,40 @@ export default function LoginPage() {
   return (
     <main className="login-page">
       <section className="login-card">
+        <div className="login-hero">
+          <div className="brand">
+            <img className="brand-logo" src="/gpm-logo.png" alt="Logo GPM" />
+            <div>
+              <strong>GPM</strong>
+              <span>Gestão de Processos de Motores</span>
+            </div>
+          </div>
+          <div className="login-logo-stage">
+            <img className="login-logo-display" src="/gpm-logo.png" alt="GPM - Gestão de Processos de Motores" />
+            <div className="login-hero-copy">
+              <span>Workflow Industrial</span>
+              <strong>Controle de OS para manutenção de motores</strong>
+            </div>
+            <div className="login-status-row" aria-label="Módulos do GPM">
+              <span>OS</span>
+              <span>QR Code</span>
+              <span>Laudos</span>
+            </div>
+          </div>
+        </div>
+
         <div className="login-panel">
-          <p className="eyebrow">Acesso ao sistema</p>
-          <h2>Entrar no GPM</h2>
+          <div className="login-panel-heading">
+            <p className="eyebrow">Acesso ao sistema</p>
+            <h1>Entrar no GPM</h1>
+            <p>Use seu e-mail ou login para acessar o painel.</p>
+          </div>
           {user ? (
-            <p className="muted">
+            <p className="login-session">
               Sessão atual: {user.name} ({user.profile}). Entrar abaixo troca a conta ativa.
             </p>
           ) : null}
-          <form className="form-grid" onSubmit={handleSubmit}>
+          <form className="login-form" onSubmit={handleSubmit}>
             <Input
               label="E-mail ou usuário"
               value={identifier}
@@ -61,21 +86,10 @@ export default function LoginPage() {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
-        </div>
-
-        <div className="login-hero">
-          <div className="brand">
-            <img className="brand-logo" src="/gpm-logo.png" alt="Logo GPM" />
-            <div>
-              <strong>Gestão de Processos de Motores</strong>
-              <span>Manutenção industrial com consulta por OS</span>
-            </div>
-          </div>
-          <div className="login-logo-stage">
-            <img className="login-logo-display" src="/gpm-logo.png" alt="GPM - Gestão de Processos de Motores" />
-            <p>Workflow técnico para a oficina e portal simples para clientes acompanharem motores.</p>
-          </div>
           <div className="demo-users">
+            <p>
+              <BadgeCheck size={16} /> Acesso inicial
+            </p>
             {demoUsers.map((demoUser) => (
               <button
                 type="button"

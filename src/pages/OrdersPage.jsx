@@ -20,11 +20,34 @@ import { canAccess } from '../utils/permissions.js';
 const emptyOrder = {
   clientId: '',
   motorId: '',
+  motorMode: 'new',
+  motor: {
+    identification: '',
+    internalCode: '',
+    motorType: '',
+    brand: '',
+    model: '',
+    serialNumber: '',
+    power: '',
+    voltage: '',
+    current: '',
+    rotation: '',
+    reportedDefect: '',
+    notes: '',
+    attachments: [],
+  },
   expectedAt: '',
   priority: 'Média',
   summary: '',
   clientDocument: '',
 };
+
+function getEmptyMotor(clientId = '') {
+  return {
+    ...emptyOrder.motor,
+    clientId,
+  };
+}
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -37,7 +60,8 @@ export default function OrdersPage() {
   const [form, setForm] = useState({
     ...emptyOrder,
     clientId: clients[0]?.id || '',
-    motorId: motors.find((motor) => motor.clientId === clients[0]?.id)?.id || motors[0]?.id || '',
+    motorId: motors.find((motor) => motor.clientId === clients[0]?.id)?.id || '',
+    motor: getEmptyMotor(clients[0]?.id || ''),
   });
 
   const availableMotors = useMemo(
@@ -48,25 +72,82 @@ export default function OrdersPage() {
   function openForm() {
     const firstClientId = clients[0]?.id || '';
     const firstMotorId = motors.find((motor) => motor.clientId === firstClientId)?.id || '';
-    setForm({ ...emptyOrder, clientId: firstClientId, motorId: firstMotorId });
+    setForm({
+      ...emptyOrder,
+      clientId: firstClientId,
+      motorId: firstMotorId,
+      motorMode: 'new',
+      motor: getEmptyMotor(firstClientId),
+    });
     setLookupMessage('');
     setModalOpen(true);
   }
 
   function saveOrder(event) {
     event.preventDefault();
-    if (!form.clientId || !form.motorId) {
-      setLookupMessage('Selecione um cliente e um motor antes de gerar a OS.');
+    if (!form.clientId) {
+      setLookupMessage('Selecione ou localize um cliente antes de gerar a OS.');
       return;
     }
-    osService.save(form, user?.name);
+
+    let motorId = form.motorId;
+    const summary = form.summary.trim() || form.motor.reportedDefect.trim();
+
+    if (form.motorMode === 'new') {
+      const requiredMotorFields = [
+        form.motor.identification,
+        form.motor.brand,
+        form.motor.model,
+        form.motor.power,
+        form.motor.voltage,
+        form.motor.rotation,
+      ];
+
+      if (requiredMotorFields.some((field) => !field.trim())) {
+        setLookupMessage('Preencha os dados principais do motor antes de gerar a OS.');
+        return;
+      }
+
+      const savedMotor = motorService.save({
+        ...form.motor,
+        clientId: form.clientId,
+      });
+      motorId = savedMotor.id;
+    }
+
+    if (!motorId) {
+      setLookupMessage('Selecione um motor existente ou cadastre um novo motor nesta entrada.');
+      return;
+    }
+
+    if (!summary) {
+      setLookupMessage('Informe a descrição inicial ou o defeito informado pelo cliente.');
+      return;
+    }
+
+    osService.save(
+      {
+        clientId: form.clientId,
+        motorId,
+        expectedAt: form.expectedAt,
+        priority: form.priority,
+        summary,
+        clientDocument: form.clientDocument,
+      },
+      user?.name,
+    );
     setOrders(osService.getVisibleOrdersForUser(user));
     setModalOpen(false);
   }
 
   function handleClientChange(clientId) {
     const firstMotor = motors.find((motor) => motor.clientId === clientId);
-    setForm({ ...form, clientId, motorId: firstMotor?.id || '' });
+    setForm({
+      ...form,
+      clientId,
+      motorId: firstMotor?.id || '',
+      motor: { ...form.motor, clientId },
+    });
   }
 
   function handleDocumentLookup(document) {
@@ -78,8 +159,24 @@ export default function OrdersPage() {
     }
 
     const firstMotor = motors.find((motor) => motor.clientId === client.id);
-    setForm({ ...form, clientDocument: document, clientId: client.id, motorId: firstMotor?.id || '' });
+    setForm({
+      ...form,
+      clientDocument: document,
+      clientId: client.id,
+      motorId: firstMotor?.id || '',
+      motor: { ...form.motor, clientId: client.id },
+    });
     setLookupMessage(`Cliente localizado: ${client.name}`);
+  }
+
+  function updateMotor(values) {
+    setForm((current) => ({
+      ...current,
+      motor: {
+        ...current.motor,
+        ...values,
+      },
+    }));
   }
 
   async function handleCnpjLookup() {
@@ -172,14 +269,19 @@ export default function OrdersPage() {
         ))}
       </section>
 
-      <Modal title="Criar Ordem de Serviço" open={modalOpen} onClose={() => setModalOpen(false)}>
+      <Modal title="Entrada de motor e criação da OS" open={modalOpen} onClose={() => setModalOpen(false)}>
         <form className="form-grid two" onSubmit={saveOrder}>
+          <div className="span-2 form-section-title">
+            <p className="eyebrow">1. Cliente</p>
+            <h3>Localize ou selecione o cliente</h3>
+          </div>
           <CpfCnpjInput
             value={form.clientDocument}
             loading={cnpjLoading}
             onChange={handleDocumentLookup}
             onValidate={() => handleDocumentLookup(form.clientDocument)}
             onSearchCnpj={handleCnpjLookup}
+            required={false}
           />
           {lookupMessage ? <p className="status status-cyan span-2">{lookupMessage}</p> : null}
           <Select
@@ -188,12 +290,134 @@ export default function OrdersPage() {
             options={clients.map((client) => ({ value: client.id, label: client.name }))}
             onChange={(event) => handleClientChange(event.target.value)}
           />
-          <Select
-            label="Motor"
-            value={form.motorId}
-            options={availableMotors.map((motor) => ({ value: motor.id, label: `${motor.identification} · ${motor.brand}` }))}
-            onChange={(event) => setForm({ ...form, motorId: event.target.value })}
-          />
+
+          <div className="span-2 form-section-title">
+            <p className="eyebrow">2. Motor</p>
+            <h3>Cadastre o motor nesta entrada ou escolha um existente</h3>
+          </div>
+          <div className="segmented-control span-2" role="group" aria-label="Tipo de entrada do motor">
+            <button
+              type="button"
+              className={form.motorMode === 'new' ? 'is-active' : ''}
+              onClick={() => setForm({ ...form, motorMode: 'new' })}
+            >
+              Cadastrar novo motor
+            </button>
+            <button
+              type="button"
+              className={form.motorMode === 'existing' ? 'is-active' : ''}
+              disabled={!availableMotors.length}
+              onClick={() => setForm({ ...form, motorMode: 'existing', motorId: availableMotors[0]?.id || '' })}
+            >
+              Usar motor existente
+            </button>
+          </div>
+
+          {form.motorMode === 'existing' ? (
+            <Select
+              label="Motor existente"
+              value={form.motorId}
+              options={
+                availableMotors.length
+                  ? availableMotors.map((motor) => ({
+                      value: motor.id,
+                      label: `${motor.internalCode || motor.identification} · ${motor.brand} ${motor.model}`,
+                    }))
+                  : [{ value: '', label: 'Nenhum motor cadastrado para este cliente' }]
+              }
+              onChange={(event) => setForm({ ...form, motorId: event.target.value })}
+            />
+          ) : (
+            <>
+              <Input
+                label="Código interno do motor"
+                value={form.motor.internalCode}
+                onChange={(event) => updateMotor({ internalCode: event.target.value })}
+              />
+              <Input
+                label="Identificação"
+                value={form.motor.identification}
+                onChange={(event) => updateMotor({ identification: event.target.value })}
+                required={form.motorMode === 'new'}
+              />
+              <Input
+                label="Tipo de motor"
+                value={form.motor.motorType}
+                onChange={(event) => updateMotor({ motorType: event.target.value })}
+              />
+              <Input
+                label="Marca"
+                value={form.motor.brand}
+                onChange={(event) => updateMotor({ brand: event.target.value })}
+                required={form.motorMode === 'new'}
+              />
+              <Input
+                label="Modelo"
+                value={form.motor.model}
+                onChange={(event) => updateMotor({ model: event.target.value })}
+                required={form.motorMode === 'new'}
+              />
+              <Input
+                label="Número de série"
+                value={form.motor.serialNumber}
+                onChange={(event) => updateMotor({ serialNumber: event.target.value })}
+              />
+              <Input
+                label="Potência"
+                value={form.motor.power}
+                onChange={(event) => updateMotor({ power: event.target.value })}
+                required={form.motorMode === 'new'}
+              />
+              <Input
+                label="Tensão"
+                value={form.motor.voltage}
+                onChange={(event) => updateMotor({ voltage: event.target.value })}
+                required={form.motorMode === 'new'}
+              />
+              <Input
+                label="Corrente"
+                value={form.motor.current}
+                onChange={(event) => updateMotor({ current: event.target.value })}
+              />
+              <Input
+                label="Rotação RPM"
+                value={form.motor.rotation}
+                onChange={(event) => updateMotor({ rotation: event.target.value })}
+                required={form.motorMode === 'new'}
+              />
+              <label className="field span-2">
+                <span>Defeito informado pelo cliente</span>
+                <textarea
+                  value={form.motor.reportedDefect}
+                  onChange={(event) => updateMotor({ reportedDefect: event.target.value })}
+                  required={form.motorMode === 'new' && !form.summary.trim()}
+                />
+              </label>
+              <label className="field span-2">
+                <span>Observações do motor</span>
+                <textarea value={form.motor.notes} onChange={(event) => updateMotor({ notes: event.target.value })} />
+              </label>
+              <label className="upload-drop span-2">
+                <span>Fotos/anexos mockados</span>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(event) => {
+                    const fileNames = Array.from(event.target.files || []).map((file) => file.name);
+                    updateMotor({ attachments: [...(form.motor.attachments || []), ...fileNames] });
+                  }}
+                />
+              </label>
+              <div className="attachment-list span-2">
+                {form.motor.attachments?.length ? form.motor.attachments.map((file) => <span key={file}>{file}</span>) : <span>Sem anexos</span>}
+              </div>
+            </>
+          )}
+
+          <div className="span-2 form-section-title">
+            <p className="eyebrow">3. Ordem de Serviço</p>
+            <h3>Defina a prioridade e gere a OS</h3>
+          </div>
           <Input
             label="Previsão"
             type="date"
@@ -208,10 +432,10 @@ export default function OrdersPage() {
           />
           <label className="field span-2">
             <span>Descrição inicial</span>
-            <textarea value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} required />
+            <textarea value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} />
           </label>
-          <div className="form-actions">
-            <Button type="submit">Gerar OS</Button>
+          <div className="form-actions span-2">
+            <Button type="submit">Salvar motor e gerar OS</Button>
           </div>
         </form>
       </Modal>

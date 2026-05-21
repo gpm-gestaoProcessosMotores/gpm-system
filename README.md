@@ -30,31 +30,41 @@ VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
 
-4. Crie o usuário administrador inicial em Authentication > Users com e-mail `admin@gmail.com` e senha `123456`, ou tente rodar [supabase/create-demo-auth-users.sql](/Users/silvianeschaffrath/gpm-system/supabase/create-demo-auth-users.sql) no SQL Editor.
+4. Crie os usuários de demonstração em Authentication > Users com senha `123456`, ou tente rodar [supabase/create-demo-auth-users.sql](/Users/silvianeschaffrath/gpm-system/supabase/create-demo-auth-users.sql) no SQL Editor.
 5. Rode o SQL em [supabase/schema.sql](/Users/silvianeschaffrath/gpm-system/supabase/schema.sql) no SQL Editor.
 6. Faça login como `admin@gmail.com` uma vez para o frontend sincronizar os dados mockados para a tabela `gpm_records`.
 7. Reinicie o Vite.
 
 Sem `.env`, o app continua usando os mocks/localStorage.
 
-## Acesso inicial
+## Acessos de demonstração
 
-O app começa somente com o administrador abaixo. Os demais usuários devem ser criados pelo próprio admin na tela **Usuários**.
+Todos usam a senha `123456`.
 
 - `admin@gmail.com` / `123456` - Administrador
+- `adm@gmail.com` / `123456` - Administrativo
+- `mecanica@gmail.com` / `123456` - Técnico Mecânica
+- `usinagem@gmail.com` / `123456` - Técnico Usinagem
+- `eletrica@gmail.com` / `123456` - Técnico Elétrica
+- `gestor@gmail.com` / `123456` - Gestor
+- `cliente@gmail.com` / `123456` - Cliente
 
 Este projeto contém somente o frontend. Os services em `src/services` usam `localStorage` hoje e foram organizados para futura troca por APIs REST.
 
 ## Fluxo de cliente
 
-- Crie um usuário com perfil `Cliente` em **Usuários** ou marque o acesso no cadastro do cliente.
+- Faça login com `cliente@gmail.com` / `123456`.
 - O sistema redireciona para `/cliente/consulta-os`.
 - Consulte `OS0001` para ver a OS do cliente teste.
 - Consulte `OS0002` para ver o bloqueio: a OS pertence a outro cliente.
 
 ## Testes rápidos de permissão
 
-- Crie usuários com os perfis Técnico Mecânica, Técnico Usinagem, Técnico Elétrica, Administrativo, Gestor e Cliente para testar os menus por permissão.
+- `mecanica@gmail.com` entra direto na área da Mecânica.
+- `usinagem@gmail.com` entra direto na área da Usinagem.
+- `eletrica@gmail.com` entra direto na área da Elétrica.
+- `adm@gmail.com` acessa clientes, motores, OS, orçamentos e histórico.
+- `gestor@gmail.com` acessa dashboard, relatórios, OS e histórico.
 - `admin@gmail.com` acessa tudo, incluindo usuários, funcionários, setores e as áreas técnicas.
 
 Os mocks incluem `OS0001` para Cliente Teste, `OS0002` para Outro Cliente, `OS0003` na Mecânica, `OS0004` na Usinagem e `OS0005` na Elétrica.

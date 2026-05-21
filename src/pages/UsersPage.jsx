@@ -9,6 +9,7 @@ import { profiles, sectors } from '../mocks/initialData.js';
 import { clientService } from '../services/clientService.js';
 import { employeeService } from '../services/employeeService.js';
 import { userService } from '../services/userService.js';
+import { technicalSectorByProfile } from '../utils/technicalStages.js';
 import { isEmail } from '../utils/validators.js';
 
 const emptyUser = {
@@ -85,7 +86,10 @@ export default function UsersPage() {
       return;
     }
 
-    const payload = { ...form };
+    const payload = {
+      ...form,
+      sector: technicalSectorByProfile[form.profile] || form.sector,
+    };
     delete payload.confirmPassword;
     if (editing && !payload.password) {
       const currentUser = users.find((user) => user.id === payload.id);

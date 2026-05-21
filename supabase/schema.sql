@@ -195,8 +195,8 @@ grant execute on function public.resolve_login_email(text) to anon, authenticate
 grant execute on function public.current_gpm_profile() to authenticated;
 grant execute on function public.replace_gpm_collection(text, jsonb) to authenticated;
 
--- Depois de criar o usuário admin@gmail.com em Authentication > Users com senha 123456,
--- rode este bloco para vincular o perfil inicial usado pelo frontend.
+-- Depois de criar os usuários abaixo em Authentication > Users com senha 123456,
+-- rode este bloco para vincular os perfis de demonstração usados pelo frontend.
 delete from public.user_profiles
 where email in (
   'admin@gpm.com',
@@ -205,7 +205,14 @@ where email in (
   'usinagem@gpm.com',
   'eletrica@gpm.com',
   'gestor@gpm.com',
-  'cliente@gpm.com'
+  'cliente@gpm.com',
+  'admin@gmail.com',
+  'adm@gmail.com',
+  'mecanica@gmail.com',
+  'usinagem@gmail.com',
+  'eletrica@gmail.com',
+  'gestor@gmail.com',
+  'cliente@gmail.com'
 );
 
 insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
@@ -217,4 +224,46 @@ on conflict (email) do update set
   login = excluded.login,
   profile = excluded.profile,
   sector = excluded.sector,
+  status = excluded.status;
+
+insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
+select id, 'Rafael Lima', email, 'administrativo', 'Administrativo', 'Administrativo', 'Ativo'
+from auth.users
+where email = 'adm@gmail.com'
+on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
+
+insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
+select id, 'João Batista', email, 'mecanica', 'Técnico Mecânica', 'Mecânica', 'Ativo'
+from auth.users
+where email = 'mecanica@gmail.com'
+on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
+
+insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
+select id, 'Mariana Costa', email, 'usinagem', 'Técnico Usinagem', 'Usinagem', 'Ativo'
+from auth.users
+where email = 'usinagem@gmail.com'
+on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
+
+insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
+select id, 'Diego Santos', email, 'eletrica', 'Técnico Elétrica', 'Elétrica', 'Ativo'
+from auth.users
+where email = 'eletrica@gmail.com'
+on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
+
+insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
+select id, 'Fernanda Rocha', email, 'gestor', 'Gestor', 'Gestão', 'Ativo'
+from auth.users
+where email = 'gestor@gmail.com'
+on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
+
+insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, linked_client_id, status)
+select id, 'Cliente Teste', email, 'cliente', 'Cliente', null, 'cli-001', 'Ativo'
+from auth.users
+where email = 'cliente@gmail.com'
+on conflict (email) do update set
+  auth_user_id = excluded.auth_user_id,
+  login = excluded.login,
+  profile = excluded.profile,
+  sector = excluded.sector,
+  linked_client_id = excluded.linked_client_id,
   status = excluded.status;
