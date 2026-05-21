@@ -21,7 +21,6 @@ const emptyClient = {
   document: '',
   rgStateRegistration: '',
   phone: '',
-  whatsapp: '',
   email: '',
   cep: '',
   street: '',
@@ -206,8 +205,7 @@ export default function ClientsPage() {
             <p className="muted">{client.address}</p>
             <div className="meta-grid">
               <span>{client.type}</span>
-              <span>{client.phone}</span>
-              <span>WhatsApp: {client.whatsapp || client.phone}</span>
+              <span>Telefone: {client.phone}</span>
               <span>{client.email}</span>
               <span>{client.city}/{client.state}</span>
             </div>
@@ -267,15 +265,9 @@ export default function ClientsPage() {
             required
           />
           <Input
-            label="Telefone"
+            label="Telefone / número para contato"
             value={form.phone}
             onChange={(event) => setForm({ ...form, phone: formatPhone(event.target.value) })}
-            required
-          />
-          <Input
-            label="WhatsApp"
-            value={form.whatsapp}
-            onChange={(event) => setForm({ ...form, whatsapp: formatPhone(event.target.value) })}
             required
           />
           <Input

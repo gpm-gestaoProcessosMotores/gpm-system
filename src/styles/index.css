@@ -1,23 +1,24 @@
 :root {
-  --navy-950: #071a33;
-  --navy-900: #0b2545;
-  --navy-800: #113a67;
-  --blue-600: #0879c9;
-  --cyan-500: #17c4d8;
-  --cyan-600: #0ca9bd;
-  --gray-950: #102033;
-  --gray-700: #526276;
-  --gray-500: #7d8b9d;
-  --gray-300: #d8e1ec;
-  --gray-200: #e8eef5;
-  --gray-100: #f4f8fb;
+  --navy-950: #020712;
+  --navy-900: #07172b;
+  --navy-800: #0a2c57;
+  --blue-600: #098cff;
+  --cyan-500: #19d9ff;
+  --cyan-600: #00b8f5;
+  --gray-950: #0b1726;
+  --gray-700: #526174;
+  --gray-500: #8091a7;
+  --gray-300: #c8d7e8;
+  --gray-200: #e5edf6;
+  --gray-100: #f3f8fc;
   --white: #ffffff;
   --green: #16a34a;
   --amber: #d97706;
   --red: #dc2626;
-  --shadow: 0 18px 45px rgba(11, 37, 69, 0.12);
-  --shadow-soft: 0 10px 26px rgba(11, 37, 69, 0.08);
-  --shadow-strong: 0 24px 60px rgba(7, 26, 51, 0.18);
+  --silver: #d6e3ef;
+  --shadow: 0 18px 45px rgba(2, 7, 18, 0.16);
+  --shadow-soft: 0 10px 26px rgba(2, 7, 18, 0.1);
+  --shadow-strong: 0 24px 70px rgba(2, 7, 18, 0.28);
   --radius: 8px;
 }
 
@@ -43,9 +44,9 @@ body {
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background:
-    linear-gradient(90deg, rgba(8, 121, 201, 0.035) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(8, 121, 201, 0.035) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(23, 196, 216, 0.1) 0, rgba(244, 248, 251, 0) 360px),
+    linear-gradient(90deg, rgba(0, 184, 245, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(0, 184, 245, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(25, 217, 255, 0.12) 0, rgba(243, 248, 252, 0) 360px),
     var(--gray-100);
   background-size: 42px 42px, 42px 42px, auto;
 }
@@ -94,11 +95,12 @@ a {
   color: var(--white);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    linear-gradient(90deg, rgba(23, 196, 216, 0.07) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(23, 196, 216, 0.07) 1px, transparent 1px),
-    linear-gradient(180deg, #0e3158 0%, var(--navy-900) 42%, var(--navy-950) 100%);
-  background-size: 34px 34px, 34px 34px, auto;
-  box-shadow: 16px 0 38px rgba(7, 26, 51, 0.22);
+    radial-gradient(circle at 70% 0%, rgba(25, 217, 255, 0.2), transparent 34%),
+    linear-gradient(90deg, rgba(25, 217, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(25, 217, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(180deg, #0a2448 0%, var(--navy-900) 40%, var(--navy-950) 100%);
+  background-size: auto, 34px 34px, 34px 34px, auto;
+  box-shadow: 16px 0 44px rgba(2, 7, 18, 0.32);
   transition: transform 0.22s ease;
 }
 
@@ -127,19 +129,29 @@ a {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.brand-logo,
 .brand-mark {
-  display: grid;
   width: 54px;
   height: 54px;
-  place-items: center;
+  flex: 0 0 auto;
   border: 2px solid rgba(23, 196, 216, 0.8);
   border-radius: var(--radius);
   background:
     linear-gradient(135deg, rgba(23, 196, 216, 0.28), rgba(8, 121, 201, 0.18)),
     rgba(23, 196, 216, 0.14);
   color: var(--white);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 12px 24px rgba(0, 0, 0, 0.16);
+  object-fit: cover;
+  object-position: center;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 24px rgba(25, 217, 255, 0.22),
+    0 12px 24px rgba(0, 0, 0, 0.16);
   font-weight: 900;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
 }
 
 .brand strong,
@@ -177,8 +189,8 @@ a {
 
 .side-nav a.active,
 .side-nav a:hover {
-  border-color: rgba(23, 196, 216, 0.22);
-  background: rgba(23, 196, 216, 0.16);
+  border-color: rgba(25, 217, 255, 0.28);
+  background: linear-gradient(90deg, rgba(25, 217, 255, 0.18), rgba(9, 140, 255, 0.08));
   color: var(--white);
   box-shadow: inset 4px 0 0 var(--cyan-500);
 }
@@ -207,7 +219,9 @@ a {
   gap: 12px;
   padding: 14px 16px;
   border-bottom: 1px solid rgba(216, 225, 236, 0.86);
-  background: rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(90deg, rgba(25, 217, 255, 0.06), rgba(255, 255, 255, 0.92) 34%),
+    rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
 }
 
@@ -239,6 +253,37 @@ a {
 .desktop-search,
 .user-pill {
   display: none;
+}
+
+.desktop-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--navy-900);
+  font: inherit;
+  font-weight: 800;
+}
+
+.desktop-search input::placeholder {
+  color: var(--gray-700);
+  opacity: 1;
+}
+
+.desktop-search button {
+  border: 0;
+  background: transparent;
+  color: var(--blue-600);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.desktop-search:focus-within {
+  border-color: rgba(25, 217, 255, 0.8);
+  box-shadow: 0 0 0 4px rgba(25, 217, 255, 0.14);
 }
 
 .mobile-menu-button {
@@ -314,8 +359,8 @@ a {
 
 .btn-primary {
   color: var(--navy-950);
-  background: linear-gradient(180deg, #28d7e8, var(--cyan-500));
-  box-shadow: 0 10px 20px rgba(23, 196, 216, 0.22);
+  background: linear-gradient(180deg, #51e8ff, var(--cyan-500) 45%, var(--cyan-600));
+  box-shadow: 0 10px 22px rgba(25, 217, 255, 0.28);
 }
 
 .btn-primary:hover {
@@ -395,10 +440,11 @@ a {
   padding: 22px;
   color: var(--white);
   background:
+    radial-gradient(circle at 76% 18%, rgba(25, 217, 255, 0.28), transparent 28%),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(135deg, var(--navy-900), #0e426f 68%, var(--cyan-600));
-  background-size: 36px 36px, 36px 36px, auto;
+    linear-gradient(135deg, var(--navy-950), #082950 58%, #006aa9);
+  background-size: auto, 36px 36px, 36px 36px, auto;
   box-shadow: var(--shadow-strong);
 }
 
@@ -879,9 +925,10 @@ a {
   padding: 18px;
   place-items: center;
   background:
-    linear-gradient(90deg, rgba(23, 196, 216, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(23, 196, 216, 0.08) 1px, transparent 1px),
-    linear-gradient(135deg, rgba(7, 26, 51, 0.98), rgba(11, 37, 69, 0.92));
+    radial-gradient(circle at 52% 20%, rgba(9, 140, 255, 0.3), transparent 30%),
+    linear-gradient(90deg, rgba(25, 217, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(25, 217, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(135deg, #01040b, var(--navy-950) 48%, #061c38);
   background-size: 38px 38px, 38px 38px, auto;
 }
 
@@ -907,26 +954,36 @@ a {
   padding: 30px 22px;
   color: var(--white);
   background:
+    radial-gradient(circle at 50% 34%, rgba(25, 217, 255, 0.22), transparent 34%),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(23, 196, 216, 0.18), rgba(7, 26, 51, 0.06)),
-    var(--navy-900);
-  background-size: 34px 34px, 34px 34px, auto;
+    linear-gradient(180deg, rgba(9, 140, 255, 0.22), rgba(2, 7, 18, 0.06)),
+    var(--navy-950);
+  background-size: auto, 34px 34px, 34px 34px, auto, auto;
 }
 
-.login-hero h1,
 .login-panel h2 {
   margin: 0;
 }
 
-.login-hero h1 {
-  font-size: clamp(2rem, 10vw, 4rem);
+.login-logo-stage {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+
+.login-logo-display {
+  width: min(380px, 86vw);
+  border-radius: 10px;
+  filter: drop-shadow(0 0 28px rgba(25, 217, 255, 0.28));
 }
 
 .login-hero p {
   margin: 0;
+  max-width: 520px;
   color: rgba(255, 255, 255, 0.78);
   font-weight: 650;
+  text-align: center;
 }
 
 .demo-users {
@@ -1101,9 +1158,10 @@ a {
   padding: 14px 16px;
   border-bottom: 1px solid rgba(23, 196, 216, 0.2);
   background:
-    linear-gradient(90deg, rgba(23, 196, 216, 0.09) 1px, transparent 1px),
+    radial-gradient(circle at 86% 0%, rgba(25, 217, 255, 0.18), transparent 28%),
+    linear-gradient(90deg, rgba(25, 217, 255, 0.09) 1px, transparent 1px),
     linear-gradient(180deg, var(--navy-900), var(--navy-950));
-  background-size: 36px 36px, auto;
+  background-size: auto, 36px 36px, auto;
   color: var(--white);
 }
 
@@ -1364,6 +1422,7 @@ a {
     gap: 10px;
   }
 
+  .brand-logo,
   .brand-mark {
     width: 46px;
     height: 46px;
@@ -1464,7 +1523,8 @@ a {
   }
 
   .desktop-search {
-    min-width: 220px;
+    width: min(34vw, 320px);
+    min-width: 240px;
   }
 
   .grid-3 {

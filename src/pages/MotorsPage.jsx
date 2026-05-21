@@ -35,6 +35,7 @@ export default function MotorsPage() {
   const [form, setForm] = useState({ ...emptyMotor, clientId: clients[0]?.id || '' });
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   function refresh() {
     setMotors(motorService.list());
@@ -43,6 +44,7 @@ export default function MotorsPage() {
   function openForm(motor) {
     setForm(motor || { ...emptyMotor, clientId: clients[0]?.id || '' });
     setError('');
+    setMessage('');
     setModalOpen(true);
   }
 
@@ -57,6 +59,27 @@ export default function MotorsPage() {
     setModalOpen(false);
   }
 
+  function removeMotor(motor) {
+    const linkedOrders = motorService.getLinkedOrders(motor.id);
+    const shouldRemove = linkedOrders.length
+      ? window.confirm(
+          `Este motor possui ${linkedOrders.length} OS vinculada(s). Ao excluir o motor, essas OS também sairão das etapas técnicas. Deseja continuar?`,
+        )
+      : window.confirm('Deseja excluir este motor?');
+
+    if (!shouldRemove) {
+      return;
+    }
+
+    const result = motorService.remove(motor.id);
+    refresh();
+    setMessage(
+      result.removedOrdersCount
+        ? `Motor excluído. ${result.removedOrdersCount} OS vinculada(s) foram removidas das etapas.`
+        : 'Motor excluído.',
+    );
+  }
+
   return (
     <div className="content-grid">
       <div className="section-heading">
@@ -68,6 +91,7 @@ export default function MotorsPage() {
           Novo motor
         </Button>
       </div>
+      {message ? <p className="status status-cyan">{message}</p> : null}
 
       <div className="grid-3">
         {motors.map((motor) => {
@@ -95,10 +119,7 @@ export default function MotorsPage() {
                 <Button
                   variant="danger"
                   icon={Trash2}
-                  onClick={() => {
-                    motorService.remove(motor.id);
-                    refresh();
-                  }}
+                  onClick={() => removeMotor(motor)}
                 >
                   Excluir
                 </Button>

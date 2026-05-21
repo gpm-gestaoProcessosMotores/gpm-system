@@ -23,7 +23,7 @@ export const STORAGE_KEYS = {
   currentUser: 'gpm_current_user',
 };
 
-const STORAGE_VERSION = '5';
+const STORAGE_VERSION = '6';
 
 const initialCollections = {
   [STORAGE_KEYS.users]: initialUsers,
@@ -36,6 +36,59 @@ const initialCollections = {
   [STORAGE_KEYS.history]: initialHistory,
 };
 
+let cleaningLinkedRecords = false;
+
+function parseCollection(key) {
+  return JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function persistCleanCollection(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+  pushCollectionToSupabase(key, value);
+}
+
+function cleanupLinkedRecords() {
+  if (cleaningLinkedRecords) {
+    return;
+  }
+
+  cleaningLinkedRecords = true;
+  try {
+    const clients = parseCollection(STORAGE_KEYS.clients);
+    const motors = parseCollection(STORAGE_KEYS.motors);
+    const orders = parseCollection(STORAGE_KEYS.orders);
+    const budgets = parseCollection(STORAGE_KEYS.budgets);
+    const history = parseCollection(STORAGE_KEYS.history);
+
+    const validClientIds = new Set(clients.map((client) => client.id));
+    const validMotors = motors.filter((motor) => validClientIds.has(motor.clientId));
+    const validMotorIds = new Set(validMotors.map((motor) => motor.id));
+    const motorById = new Map(validMotors.map((motor) => [motor.id, motor]));
+    const validOrders = orders.filter((order) => {
+      const motor = motorById.get(order.motorId);
+      return Boolean(motor && validClientIds.has(order.clientId) && motor.clientId === order.clientId);
+    });
+    const validOrderIds = new Set(validOrders.map((order) => order.id));
+    const validBudgets = budgets.filter((budget) => !budget.orderId || validOrderIds.has(budget.orderId));
+    const validHistory = history.filter((item) => !item.orderId || validOrderIds.has(item.orderId));
+
+    if (validMotors.length !== motors.length) {
+      persistCleanCollection(STORAGE_KEYS.motors, validMotors);
+    }
+    if (validOrders.length !== orders.length) {
+      persistCleanCollection(STORAGE_KEYS.orders, validOrders);
+    }
+    if (validBudgets.length !== budgets.length) {
+      persistCleanCollection(STORAGE_KEYS.budgets, validBudgets);
+    }
+    if (validHistory.length !== history.length) {
+      persistCleanCollection(STORAGE_KEYS.history, validHistory);
+    }
+  } finally {
+    cleaningLinkedRecords = false;
+  }
+}
+
 export function initializeStorage() {
   const currentVersion = localStorage.getItem(STORAGE_KEYS.version);
   if (currentVersion !== STORAGE_VERSION) {
@@ -44,6 +97,7 @@ export function initializeStorage() {
     });
     localStorage.setItem(STORAGE_KEYS.version, STORAGE_VERSION);
     localStorage.removeItem(STORAGE_KEYS.currentUser);
+    cleanupLinkedRecords();
     return;
   }
 
@@ -52,6 +106,7 @@ export function initializeStorage() {
       localStorage.setItem(key, JSON.stringify(value));
     }
   });
+  cleanupLinkedRecords();
 }
 
 export function readCollection(key) {

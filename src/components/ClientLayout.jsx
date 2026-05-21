@@ -16,7 +16,7 @@ export default function ClientLayout() {
     <div className="client-shell">
       <header className="client-header">
         <div className="brand">
-          <div className="brand-mark">GPM</div>
+          <img className="brand-logo" src="/gpm-logo.png" alt="Logo GPM" />
           <div>
             <strong>Portal do Cliente</strong>
             <span>{user?.name}</span>

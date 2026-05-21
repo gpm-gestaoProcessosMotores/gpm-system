@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import Input from '../components/Input.jsx';
@@ -24,10 +25,12 @@ const statuses = [
 
 export default function SearchPage() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const orders = osService.getVisibleOrdersForUser(user);
   const clients = clientService.list();
   const motors = motorService.list();
   const [filters, setFilters] = useState({
+    term: searchParams.get('busca') || '',
     number: '',
     client: '',
     status: 'Todos',
@@ -35,18 +38,40 @@ export default function SearchPage() {
     date: '',
   });
 
+  useEffect(() => {
+    setFilters((current) => ({ ...current, term: searchParams.get('busca') || '' }));
+  }, [searchParams]);
+
   const results = useMemo(
     () =>
       orders.filter((order) => {
         const client = clients.find((item) => item.id === order.clientId);
+        const motor = motors.find((item) => item.id === order.motorId);
+        const generalFields = [
+          order.number,
+          order.status,
+          order.currentSector,
+          order.summary,
+          client?.name,
+          client?.document,
+          client?.email,
+          motor?.identification,
+          motor?.internalCode,
+          motor?.brand,
+          motor?.model,
+          motor?.serialNumber,
+          motor?.reportedDefect,
+        ];
+        const termMatches =
+          !filters.term.trim() || generalFields.some((field) => normalizeText(field).includes(normalizeText(filters.term)));
         const numberMatches = normalizeText(order.number).includes(normalizeText(filters.number));
         const clientMatches = normalizeText(client?.name).includes(normalizeText(filters.client));
         const statusMatches = filters.status === 'Todos' || order.status === filters.status;
         const sectorMatches = filters.sector === 'Todos' || order.currentSector === filters.sector;
         const dateMatches = !filters.date || order.openedAt.startsWith(filters.date);
-        return numberMatches && clientMatches && statusMatches && sectorMatches && dateMatches;
+        return termMatches && numberMatches && clientMatches && statusMatches && sectorMatches && dateMatches;
       }),
-    [orders, clients, filters],
+    [orders, clients, motors, filters],
   );
 
   return (
@@ -58,7 +83,13 @@ export default function SearchPage() {
             <h2>Pesquisar OS</h2>
           </div>
         </div>
-        <div className="form-grid two">
+        <form className="form-grid two" onSubmit={(event) => event.preventDefault()}>
+          <Input
+            label="Busca geral"
+            value={filters.term}
+            placeholder="Digite OS, cliente, documento, marca, modelo ou código do motor"
+            onChange={(event) => setFilters({ ...filters, term: event.target.value })}
+          />
           <Input
             label="Número da OS"
             value={filters.number}
@@ -83,9 +114,9 @@ export default function SearchPage() {
           />
           <Input label="Data" type="date" value={filters.date} onChange={(event) => setFilters({ ...filters, date: event.target.value })} />
           <div className="form-actions">
-            <Button icon={Search}>Pesquisar</Button>
+            <Button type="submit" icon={Search}>Pesquisar</Button>
           </div>
-        </div>
+        </form>
       </Card>
 
       <section>
@@ -104,6 +135,12 @@ export default function SearchPage() {
               motor={motors.find((motor) => motor.id === order.motorId)}
             />
           ))}
+          {!results.length ? (
+            <Card className="stage-card">
+              <h3>Nenhum resultado encontrado</h3>
+              <p className="muted">Tente buscar por número da OS, nome do cliente, documento, marca, modelo ou código do motor.</p>
+            </Card>
+          ) : null}
         </div>
       </section>
     </div>

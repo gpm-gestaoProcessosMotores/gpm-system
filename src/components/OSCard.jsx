@@ -21,6 +21,11 @@ export default function OSCard({ order, client, motor, compact = false }) {
         <span>
           <Factory size={18} /> {motor?.identification || 'Motor não localizado'}
         </span>
+        {motor?.brand || motor?.model ? (
+          <span>
+            <Factory size={18} /> {[motor?.brand, motor?.model].filter(Boolean).join(' ')}
+          </span>
+        ) : null}
         <span>
           <ClipboardList size={18} /> {order.currentSector}
         </span>

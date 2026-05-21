@@ -27,8 +27,10 @@ const emptyUser = {
 
 const technicianProfiles = ['Técnico Mecânica', 'Técnico Usinagem', 'Técnico Elétrica'];
 
-function validateUser(form, editing = false) {
+function validateUser(form, editing = false, users = []) {
   const errors = {};
+  const normalizedEmail = form.email.trim().toLowerCase();
+  const normalizedLogin = form.login.trim().toLowerCase();
 
   if (!form.name.trim()) errors.name = 'Informe o nome completo.';
   if (!isEmail(form.email)) errors.email = 'Informe um e-mail válido.';
@@ -39,6 +41,11 @@ function validateUser(form, editing = false) {
   if (!editing && form.password !== form.confirmPassword) errors.confirmPassword = 'A confirmação deve ser igual à senha.';
   if (form.profile === 'Cliente' && !form.linkedClientId) errors.linkedClientId = 'Vincule um cliente para perfil Cliente.';
   if (technicianProfiles.includes(form.profile) && !form.sector) errors.sector = 'Selecione o setor técnico.';
+
+  const duplicatedEmail = users.some((user) => user.id !== form.id && user.email?.trim().toLowerCase() === normalizedEmail);
+  const duplicatedLogin = users.some((user) => user.id !== form.id && user.login?.trim().toLowerCase() === normalizedLogin);
+  if (normalizedEmail && duplicatedEmail) errors.email = 'Já existe um usuário com este e-mail.';
+  if (normalizedLogin && duplicatedLogin) errors.login = 'Já existe um usuário com este login.';
 
   return errors;
 }
@@ -72,7 +79,7 @@ export default function UsersPage() {
   function saveUser(event) {
     event.preventDefault();
     const editing = Boolean(form.id);
-    const validationErrors = validateUser(form, editing);
+    const validationErrors = validateUser(form, editing, users);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length) {
       return;

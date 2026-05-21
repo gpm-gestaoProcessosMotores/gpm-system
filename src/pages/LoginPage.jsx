@@ -65,14 +65,14 @@ export default function LoginPage() {
 
         <div className="login-hero">
           <div className="brand">
-            <div className="brand-mark">GPM</div>
+            <img className="brand-logo" src="/gpm-logo.png" alt="Logo GPM" />
             <div>
               <strong>Gestão de Processos de Motores</strong>
               <span>Manutenção industrial com consulta por OS</span>
             </div>
           </div>
-          <div>
-            <h1>GPM</h1>
+          <div className="login-logo-stage">
+            <img className="login-logo-display" src="/gpm-logo.png" alt="GPM - Gestão de Processos de Motores" />
             <p>Workflow técnico para a oficina e portal simples para clientes acompanharem motores.</p>
           </div>
           <div className="demo-users">

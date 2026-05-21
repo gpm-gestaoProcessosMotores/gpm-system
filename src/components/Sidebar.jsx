@@ -78,7 +78,7 @@ export default function Sidebar({ open, onClose }) {
     <>
       <aside className={`sidebar ${open ? 'is-open' : ''}`}>
         <div className="brand">
-          <div className="brand-mark">GPM</div>
+          <img className="brand-logo" src="/gpm-logo.png" alt="Logo GPM" />
           <div>
             <strong>GPM</strong>
             <span>Workflow Industrial</span>

@@ -1,5 +1,5 @@
--- Use este arquivo no SQL Editor se quiser criar os usuários de teste via SQL.
--- Se seu projeto Supabase bloquear escrita direta em auth.users, crie os usuários
+-- Use este arquivo no SQL Editor se quiser criar o usuário administrador inicial via SQL.
+-- Se seu projeto Supabase bloquear escrita direta em auth.users, crie o usuário
 -- manualmente em Authentication > Users com senha 123456 e depois rode schema.sql.
 
 create extension if not exists "pgcrypto";
@@ -9,13 +9,7 @@ declare
   item jsonb;
   user_id uuid;
   users jsonb := '[
-    {"email":"admin@gpm.com","password":"123456"},
-    {"email":"adm@gpm.com","password":"123456"},
-    {"email":"mecanica@gpm.com","password":"123456"},
-    {"email":"usinagem@gpm.com","password":"123456"},
-    {"email":"eletrica@gpm.com","password":"123456"},
-    {"email":"gestor@gpm.com","password":"123456"},
-    {"email":"cliente@gpm.com","password":"123456"}
+    {"email":"admin@gmail.com","password":"123456"}
   ]'::jsonb;
 begin
   for item in select * from jsonb_array_elements(users)

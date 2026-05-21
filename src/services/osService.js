@@ -85,13 +85,25 @@ function getNextSector(stages) {
   return currentKey ? stages[currentKey].sector : 'Administrativo';
 }
 
+function getValidOrders() {
+  const clients = readCollection(STORAGE_KEYS.clients);
+  const motors = readCollection(STORAGE_KEYS.motors);
+  const validClientIds = new Set(clients.map((client) => client.id));
+  const motorById = new Map(motors.map((motor) => [motor.id, motor]));
+
+  return readCollection(STORAGE_KEYS.orders).filter((order) => {
+    const motor = motorById.get(order.motorId);
+    return Boolean(motor && validClientIds.has(order.clientId) && motor.clientId === order.clientId);
+  });
+}
+
 export const osService = {
-  list: () => readCollection(STORAGE_KEYS.orders),
-  getOrders: () => readCollection(STORAGE_KEYS.orders),
-  findById: (id) => readCollection(STORAGE_KEYS.orders).find((order) => order.id === id),
-  getOrdersByCurrentSector: (sector) => readCollection(STORAGE_KEYS.orders).filter((order) => order.currentSector === sector),
-  getOrderByCode: (code) => readCollection(STORAGE_KEYS.orders).find((order) => formatOSCode(order.number) === formatOSCode(code)),
-  getOrdersByClient: (clientId) => readCollection(STORAGE_KEYS.orders).filter((order) => order.clientId === clientId),
+  list: () => getValidOrders(),
+  getOrders: () => getValidOrders(),
+  findById: (id) => getValidOrders().find((order) => order.id === id),
+  getOrdersByCurrentSector: (sector) => getValidOrders().filter((order) => order.currentSector === sector),
+  getOrderByCode: (code) => getValidOrders().find((order) => formatOSCode(order.number) === formatOSCode(code)),
+  getOrdersByClient: (clientId) => getValidOrders().filter((order) => order.clientId === clientId),
   getClientOrderStatus: (clientId, osCode) => {
     const order = osService.getOrderByCode(osCode);
     if (!order || order.clientId !== clientId) {
@@ -100,7 +112,7 @@ export const osService = {
     return order;
   },
   getVisibleOrdersForUser: (user) => {
-    const orders = readCollection(STORAGE_KEYS.orders);
+    const orders = getValidOrders();
     if (!user) {
       return [];
     }

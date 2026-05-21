@@ -1,7 +1,8 @@
 import { Menu, Search, UserRound } from 'lucide-react';
-import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { canAccess } from '../utils/permissions.js';
 import Button from './Button.jsx';
 
 const titles = {
@@ -31,10 +32,22 @@ const titles = {
 export default function Header({ onMenuClick }) {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
   const title = useMemo(() => {
     const match = Object.entries(titles).find(([path]) => location.pathname.startsWith(path));
     return match?.[1] || 'GPM';
   }, [location.pathname]);
+
+  function handleSearch(event) {
+    event.preventDefault();
+    const term = searchTerm.trim();
+    if (!term) {
+      return;
+    }
+
+    navigate(`/pesquisa?busca=${encodeURIComponent(term)}`);
+  }
 
   return (
     <header className="app-header">
@@ -46,10 +59,20 @@ export default function Header({ onMenuClick }) {
         <h1>{title}</h1>
       </div>
       <div className="header-actions">
-        <div className="desktop-search">
-          <Search size={18} />
-          <span>OS, cliente ou motor</span>
-        </div>
+        {canAccess(user?.profile, 'pesquisa') ? (
+          <form className="desktop-search" onSubmit={handleSearch}>
+            <Search size={18} />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="OS, cliente ou motor"
+              aria-label="Pesquisar OS, cliente ou motor"
+            />
+            <button type="submit" aria-label="Pesquisar">
+              Buscar
+            </button>
+          </form>
+        ) : null}
         <div className="user-pill">
           <UserRound size={18} />
           <span>{user?.name}</span>

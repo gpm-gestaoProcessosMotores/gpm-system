@@ -30,41 +30,32 @@ VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
 
-4. Crie os usuários de teste em Authentication > Users com senha `123456`, ou tente rodar [supabase/create-demo-auth-users.sql](/Users/silvianeschaffrath/gpm-system/supabase/create-demo-auth-users.sql) no SQL Editor.
+4. Crie o usuário administrador inicial em Authentication > Users com e-mail `admin@gmail.com` e senha `123456`, ou tente rodar [supabase/create-demo-auth-users.sql](/Users/silvianeschaffrath/gpm-system/supabase/create-demo-auth-users.sql) no SQL Editor.
 5. Rode o SQL em [supabase/schema.sql](/Users/silvianeschaffrath/gpm-system/supabase/schema.sql) no SQL Editor.
-6. Faça login como `admin@gpm.com` uma vez para o frontend sincronizar os dados mockados para a tabela `gpm_records`.
+6. Faça login como `admin@gmail.com` uma vez para o frontend sincronizar os dados mockados para a tabela `gpm_records`.
 7. Reinicie o Vite.
 
 Sem `.env`, o app continua usando os mocks/localStorage.
 
-## Acessos mockados
+## Acesso inicial
 
-Todos usam a senha `123456`.
+O app começa somente com o administrador abaixo. Os demais usuários devem ser criados pelo próprio admin na tela **Usuários**.
 
-- `admin@gpm.com` - Administrador
-- `adm@gpm.com` - Administrativo
-- `mecanica@gpm.com` - Técnico Mecânica
-- `usinagem@gpm.com` - Técnico Usinagem
-- `eletrica@gpm.com` - Técnico Elétrica
-- `gestor@gpm.com` - Gestor
-- `cliente@gpm.com` - Cliente
+- `admin@gmail.com` / `123456` - Administrador
 
 Este projeto contém somente o frontend. Os services em `src/services` usam `localStorage` hoje e foram organizados para futura troca por APIs REST.
 
-## Fluxo de demonstração do cliente
+## Fluxo de cliente
 
-- Faça login com `cliente@gpm.com` / `123456`.
+- Crie um usuário com perfil `Cliente` em **Usuários** ou marque o acesso no cadastro do cliente.
 - O sistema redireciona para `/cliente/consulta-os`.
 - Consulte `OS0001` para ver a OS do cliente teste.
 - Consulte `OS0002` para ver o bloqueio: a OS pertence a outro cliente.
 
 ## Testes rápidos de permissão
 
-- `mecanica@gpm.com` entra direto em `/mecanica` e não vê clientes, usuários, orçamento ou relatórios.
-- `usinagem@gpm.com` entra direto em `/usinagem`.
-- `eletrica@gpm.com` entra direto em `/eletrica`.
-- `adm@gpm.com` acessa clientes, motores, OS, orçamentos e histórico, mas não acessa funcionários, usuários, permissões ou setores.
-- `admin@gpm.com` acessa tudo, incluindo usuários, funcionários, setores e as áreas técnicas.
+- Crie usuários com os perfis Técnico Mecânica, Técnico Usinagem, Técnico Elétrica, Administrativo, Gestor e Cliente para testar os menus por permissão.
+- `admin@gmail.com` acessa tudo, incluindo usuários, funcionários, setores e as áreas técnicas.
 
 Os mocks incluem `OS0001` para Cliente Teste, `OS0002` para Outro Cliente, `OS0003` na Mecânica, `OS0004` na Usinagem e `OS0005` na Elétrica.
 
