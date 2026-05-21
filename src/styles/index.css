@@ -599,6 +599,107 @@ a {
   background: linear-gradient(180deg, rgba(23, 196, 216, 0.08), rgba(244, 248, 251, 0.82));
 }
 
+.permission-add-card,
+.permission-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.permission-add-card h3 {
+  margin: 0;
+}
+
+.permission-add-form {
+  display: grid;
+  gap: 12px;
+}
+
+.permission-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.permission-card-header {
+  display: grid;
+  gap: 12px;
+}
+
+.permission-title-field {
+  display: grid;
+  gap: 8px;
+}
+
+.permission-title-field .status {
+  width: fit-content;
+}
+
+.permission-key {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 6px 9px;
+  color: var(--gray-700);
+  background: var(--gray-100);
+  font-size: 0.76rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.permission-profiles {
+  display: grid;
+  gap: 8px;
+}
+
+.permission-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  color: var(--gray-700);
+  background: var(--white);
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.permission-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.permission-toggle.is-checked {
+  border-color: rgba(23, 196, 216, 0.42);
+  color: var(--navy-900);
+  background: linear-gradient(90deg, rgba(23, 196, 216, 0.14), rgba(255, 255, 255, 0.9));
+}
+
+.permission-toggle.is-locked {
+  cursor: not-allowed;
+}
+
+.permission-check {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--navy-900);
+}
+
+.permission-toggle.is-checked .permission-check {
+  border-color: var(--cyan-500);
+  background: var(--cyan-500);
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1193,6 +1294,20 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .permission-add-form {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 260px) auto;
+    align-items: end;
+  }
+
+  .permission-card-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .permission-profiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .compound-field {
     grid-template-columns: minmax(0, 1fr) repeat(2, max-content);
     align-items: end;
@@ -1358,5 +1473,9 @@ a {
 
   .grid-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .permission-profiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

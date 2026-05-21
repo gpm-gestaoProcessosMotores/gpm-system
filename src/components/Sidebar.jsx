@@ -18,9 +18,10 @@ import {
   UsersRound,
   Wrench,
 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { canAccess } from '../utils/permissions.js';
+import { canAccess, getPermissionConfig } from '../utils/permissions.js';
 import Button from './Button.jsx';
 
 export const navigationItems = [
@@ -49,7 +50,24 @@ export const navigationItems = [
 export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const visibleItems = navigationItems.filter((item) => canAccess(user?.profile, item.key));
+  const [permissionVersion, setPermissionVersion] = useState(0);
+  const permissionLabels = useMemo(() => {
+    const config = getPermissionConfig();
+    return config.items.reduce((labels, item) => ({ ...labels, [item.key]: item.label }), {});
+  }, [permissionVersion]);
+  const visibleItems = navigationItems
+    .map((item) => ({ ...item, label: permissionLabels[item.key] || item.label }))
+    .filter((item) => canAccess(user?.profile, item.key));
+
+  useEffect(() => {
+    const refreshPermissions = () => setPermissionVersion((version) => version + 1);
+    window.addEventListener('gpm_permissions_updated', refreshPermissions);
+    window.addEventListener('storage', refreshPermissions);
+    return () => {
+      window.removeEventListener('gpm_permissions_updated', refreshPermissions);
+      window.removeEventListener('storage', refreshPermissions);
+    };
+  }, []);
 
   function handleLogout() {
     logout();
