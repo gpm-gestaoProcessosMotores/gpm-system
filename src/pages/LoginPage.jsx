@@ -1,7 +1,10 @@
 import { BadgeCheck, LockKeyhole, LogIn, UserRound } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import Input from '../components/Input.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { initialUsers } from '../mocks/initialData.js';
 import { getDefaultRoute } from '../utils/permissions.js';
@@ -30,8 +33,16 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="login-page">
-      <section className="login-card">
+    <main className="login-page bg-background text-foreground">
+      <div className="public-theme-action">
+        <ThemeToggle />
+      </div>
+      <motion.section
+        className="login-card"
+        initial={{ opacity: 0, scale: 0.98, y: 18 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="login-hero">
           <div className="brand">
             <img className="brand-logo" src="/gpm-logo.png" alt="Logo GPM" />
@@ -60,6 +71,9 @@ export default function LoginPage() {
             <h1>Entrar no GPM</h1>
             <p>Use seu e-mail ou login para acessar o painel.</p>
           </div>
+          <Link className="btn btn-outline" to="/consulta">
+            Consultar OS sem login
+          </Link>
           {user ? (
             <p className="login-session">
               Sessão atual: {user.name} ({user.profile}). Entrar abaixo troca a conta ativa.
@@ -110,7 +124,7 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
     </main>
   );
 }

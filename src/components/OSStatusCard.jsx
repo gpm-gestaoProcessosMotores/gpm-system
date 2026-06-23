@@ -33,6 +33,11 @@ export default function OSStatusCard({ order, client, motor, budget }) {
         </div>
         <div>
           <ClipboardList size={20} />
+          <span>Código de acompanhamento</span>
+          <strong>{order.trackingCode}</strong>
+        </div>
+        <div>
+          <ClipboardList size={20} />
           <span>Etapa atual</span>
           <strong>{order.currentSector}</strong>
         </div>

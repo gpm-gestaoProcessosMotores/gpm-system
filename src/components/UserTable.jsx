@@ -4,12 +4,8 @@ import Button from './Button.jsx';
 import Card from './Card.jsx';
 import StatusBadge from './StatusBadge.jsx';
 
-export default function UserTable({ users, clients, employees, onEdit, onResetPassword, onToggleStatus }) {
+export default function UserTable({ users, employees, onEdit, onResetPassword, onToggleStatus }) {
   function getLinkedName(user) {
-    if (user.profile === 'Cliente') {
-      return clients.find((client) => client.id === user.linkedClientId)?.name || 'Cliente não vinculado';
-    }
-
     return employees.find((employee) => employee.id === user.linkedEmployeeId)?.name || 'Funcionário não vinculado';
   }
 

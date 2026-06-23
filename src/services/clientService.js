@@ -1,4 +1,4 @@
-import { STORAGE_KEYS, makeId, readCollection, upsertItem, writeCollection } from './storageService.js';
+import { STORAGE_KEYS, readCollection, upsertItem, writeCollection } from './storageService.js';
 
 function buildAddress(client) {
   const line = [client.street, client.number].filter(Boolean).join(', ');
@@ -47,42 +47,4 @@ export const clientService = {
     );
   },
   findById: (id) => readCollection(STORAGE_KEYS.clients).find((client) => client.id === id),
-  createClientAccess: (clientId, accessData) => {
-    const clients = readCollection(STORAGE_KEYS.clients);
-    const client = clients.find((current) => current.id === clientId);
-    if (!client) {
-      throw new Error('Cliente não encontrado.');
-    }
-
-    const users = readCollection(STORAGE_KEYS.users);
-    const existingUser = users.find((user) => user.linkedClientId === clientId);
-    const user = {
-      ...(existingUser || {}),
-      id: existingUser?.id || makeId('usr'),
-      name: accessData.name || client.name,
-      email: accessData.email || client.email,
-      login: accessData.login || accessData.email || client.email,
-      password: accessData.password,
-      profile: 'Cliente',
-      sector: '',
-      linkedClientId: clientId,
-      linkedEmployeeId: '',
-      status: accessData.status || 'Ativo',
-      lastAccess: existingUser?.lastAccess || '',
-    };
-
-    writeCollection(
-      STORAGE_KEYS.users,
-      existingUser ? users.map((current) => (current.id === user.id ? user : current)) : [user, ...users],
-    );
-
-    writeCollection(
-      STORAGE_KEYS.clients,
-      clients.map((current) =>
-        current.id === clientId ? { ...current, allowLogin: true, userId: user.id, address: buildAddress(current) } : current,
-      ),
-    );
-
-    return user;
-  },
 };

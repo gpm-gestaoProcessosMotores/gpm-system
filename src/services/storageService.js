@@ -24,7 +24,7 @@ export const STORAGE_KEYS = {
   currentUser: 'gpm_current_user',
 };
 
-const STORAGE_VERSION = '7';
+const STORAGE_VERSION = '8';
 
 const initialCollections = {
   [STORAGE_KEYS.users]: initialUsers,
@@ -100,6 +100,7 @@ export function initializeStorage() {
     });
     localStorage.setItem(STORAGE_KEYS.version, STORAGE_VERSION);
     localStorage.removeItem(STORAGE_KEYS.currentUser);
+    localStorage.removeItem('gpm_permission_config');
     cleanupLinkedRecords();
     return;
   }

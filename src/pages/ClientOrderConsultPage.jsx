@@ -1,11 +1,12 @@
 import { Search } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import Input from '../components/Input.jsx';
 import OSStatusCard from '../components/OSStatusCard.jsx';
 import OSTimeline from '../components/OSTimeline.jsx';
-import { useAuth } from '../contexts/AuthContext.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { budgetService } from '../services/budgetService.js';
 import { clientService } from '../services/clientService.js';
 import { motorService } from '../services/motorService.js';
@@ -13,8 +14,7 @@ import { osService } from '../services/osService.js';
 import { formatOSCode } from '../utils/validators.js';
 
 export default function ClientOrderConsultPage() {
-  const { user } = useAuth();
-  const [code, setCode] = useState('OS0001');
+  const [code, setCode] = useState('ISJE23AK');
   const [searchedCode, setSearchedCode] = useState('');
   const [error, setError] = useState('');
   const clients = clientService.list();
@@ -26,12 +26,8 @@ export default function ClientOrderConsultPage() {
       return null;
     }
 
-    if (user?.profile === 'Cliente') {
-      return osService.getClientOrderStatus(user.linkedClientId, searchedCode);
-    }
-
     return osService.getOrderByCode(searchedCode);
-  }, [searchedCode, user]);
+  }, [searchedCode]);
 
   const client = clients.find((item) => item.id === order?.clientId);
   const motor = motors.find((item) => item.id === order?.motorId);
@@ -44,27 +40,33 @@ export default function ClientOrderConsultPage() {
     setSearchedCode(formattedCode);
     setError('');
 
-    const foundOrder =
-      user?.profile === 'Cliente'
-        ? osService.getClientOrderStatus(user.linkedClientId, formattedCode)
-        : osService.getOrderByCode(formattedCode);
+    const foundOrder = osService.getOrderByCode(formattedCode);
 
     if (!foundOrder) {
-      setError('Ordem de Serviço não encontrada para este cliente.');
+      setError('Código não encontrado. Confira o código recebido na oficina.');
     }
   }
 
   return (
-    <div className="content-grid client-consult">
+    <main className="client-shell bg-background text-foreground">
+      <div className="public-theme-action">
+        <ThemeToggle />
+      </div>
+      <motion.div
+        className="client-page content-grid client-consult"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      >
       <Card className="client-consult-hero">
-        <p className="eyebrow">Consultar minha OS</p>
+        <p className="eyebrow">Consulta pública</p>
         <h1>Veja o estágio atual do seu motor</h1>
         <form className="client-search" onSubmit={handleSearch}>
           <Input
-            label="Código da OS"
+            label="Código de acompanhamento"
             value={code}
             onChange={(event) => setCode(formatOSCode(event.target.value))}
-            placeholder="Exemplo: OS0001"
+            placeholder="Exemplo: ISJE23AK"
             required
           />
           <Button type="submit" size="lg" icon={Search}>
@@ -94,6 +96,7 @@ export default function ClientOrderConsultPage() {
           </Card>
         </>
       ) : null}
-    </div>
+      </motion.div>
+    </main>
   );
 }

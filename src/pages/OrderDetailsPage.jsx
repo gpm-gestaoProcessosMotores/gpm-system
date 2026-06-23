@@ -45,6 +45,10 @@ export default function OrderDetailsPage() {
           <StatusBadge status={order.status} />
         </Card>
         <Card className="metric-card">
+          <span>Código do cliente</span>
+          <strong>{order.trackingCode}</strong>
+        </Card>
+        <Card className="metric-card">
           <span>Setor atual</span>
           <strong>{order.currentSector}</strong>
         </Card>
@@ -81,7 +85,7 @@ export default function OrderDetailsPage() {
         <p className="eyebrow">Descrição da OS</p>
         <p>{order.summary}</p>
         <div className="row-actions">
-          <Link to={`/fluxo-tecnico/${order.id}`} className="btn btn-primary">
+          <Link to={`/tecnico/${order.id}`} className="btn btn-primary">
             <Wrench size={18} /> <span>Fluxo técnico</span>
           </Link>
           <Link to={`/qrcode/${order.id}`} className="btn btn-outline">

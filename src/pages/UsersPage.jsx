@@ -6,10 +6,8 @@ import Modal from '../components/Modal.jsx';
 import UserForm from '../components/UserForm.jsx';
 import UserTable from '../components/UserTable.jsx';
 import { profiles, sectors } from '../mocks/initialData.js';
-import { clientService } from '../services/clientService.js';
 import { employeeService } from '../services/employeeService.js';
 import { userService } from '../services/userService.js';
-import { technicalSectorByProfile } from '../utils/technicalStages.js';
 import { isEmail } from '../utils/validators.js';
 
 const emptyUser = {
@@ -20,13 +18,10 @@ const emptyUser = {
   confirmPassword: '',
   profile: 'Administrativo',
   sector: 'Administrativo',
-  linkedClientId: '',
   linkedEmployeeId: '',
   status: 'Ativo',
   lastAccess: '',
 };
-
-const technicianProfiles = ['Técnico Mecânica', 'Técnico Usinagem', 'Técnico Elétrica'];
 
 function validateUser(form, editing = false, users = []) {
   const errors = {};
@@ -40,8 +35,6 @@ function validateUser(form, editing = false, users = []) {
   if (!form.status) errors.status = 'Selecione o status.';
   if (!editing && !form.password) errors.password = 'Senha obrigatória ao criar usuário.';
   if (!editing && form.password !== form.confirmPassword) errors.confirmPassword = 'A confirmação deve ser igual à senha.';
-  if (form.profile === 'Cliente' && !form.linkedClientId) errors.linkedClientId = 'Vincule um cliente para perfil Cliente.';
-  if (technicianProfiles.includes(form.profile) && !form.sector) errors.sector = 'Selecione o setor técnico.';
 
   const duplicatedEmail = users.some((user) => user.id !== form.id && user.email?.trim().toLowerCase() === normalizedEmail);
   const duplicatedLogin = users.some((user) => user.id !== form.id && user.login?.trim().toLowerCase() === normalizedLogin);
@@ -53,7 +46,6 @@ function validateUser(form, editing = false, users = []) {
 
 export default function UsersPage() {
   const [users, setUsers] = useState(userService.getUsers());
-  const clients = clientService.getClients();
   const employees = employeeService.list();
   const [form, setForm] = useState(emptyUser);
   const [errors, setErrors] = useState({});
@@ -88,7 +80,7 @@ export default function UsersPage() {
 
     const payload = {
       ...form,
-      sector: technicalSectorByProfile[form.profile] || form.sector,
+      sector: form.profile === 'Técnico' ? 'Oficina' : form.sector,
     };
     delete payload.confirmPassword;
     if (editing && !payload.password) {
@@ -127,7 +119,6 @@ export default function UsersPage() {
 
       <UserTable
         users={users}
-        clients={clients}
         employees={employees}
         onEdit={openForm}
         onResetPassword={(user) => setResetUser(user)}
@@ -144,7 +135,6 @@ export default function UsersPage() {
             setForm={setForm}
             profiles={profiles}
             sectors={sectors}
-            clients={clients}
             employees={employees}
             editing={Boolean(form.id)}
             errors={errors}

@@ -5,7 +5,6 @@ import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import Input from '../components/Input.jsx';
 import Modal from '../components/Modal.jsx';
-import OSCard from '../components/OSCard.jsx';
 import CpfCnpjInput from '../components/CpfCnpjInput.jsx';
 import Select from '../components/Select.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
@@ -16,6 +15,15 @@ import { documentService } from '../services/documentService.js';
 import { motorService } from '../services/motorService.js';
 import { osService } from '../services/osService.js';
 import { canAccess } from '../utils/permissions.js';
+import { formatPhone, onlyNumbers } from '../utils/validators.js';
+
+const emptyClientEntry = {
+  type: 'Pessoa Física',
+  name: '',
+  document: '',
+  phone: '',
+  email: '',
+};
 
 const emptyOrder = {
   clientId: '',
@@ -39,7 +47,7 @@ const emptyOrder = {
   expectedAt: '',
   priority: 'Média',
   summary: '',
-  clientDocument: '',
+  client: emptyClientEntry,
 };
 
 function getEmptyMotor(clientId = '') {
@@ -59,25 +67,22 @@ export default function OrdersPage() {
   const [cnpjLoading, setCnpjLoading] = useState(false);
   const [form, setForm] = useState({
     ...emptyOrder,
-    clientId: clients[0]?.id || '',
-    motorId: motors.find((motor) => motor.clientId === clients[0]?.id)?.id || '',
-    motor: getEmptyMotor(clients[0]?.id || ''),
+    motor: getEmptyMotor(''),
   });
 
   const availableMotors = useMemo(
-    () => motors.filter((motor) => !form.clientId || motor.clientId === form.clientId),
+    () => (form.clientId ? motors.filter((motor) => motor.clientId === form.clientId) : []),
     [form.clientId, motors],
   );
 
   function openForm() {
-    const firstClientId = clients[0]?.id || '';
-    const firstMotorId = motors.find((motor) => motor.clientId === firstClientId)?.id || '';
     setForm({
       ...emptyOrder,
-      clientId: firstClientId,
-      motorId: firstMotorId,
+      client: emptyClientEntry,
+      clientId: '',
+      motorId: '',
       motorMode: 'new',
-      motor: getEmptyMotor(firstClientId),
+      motor: getEmptyMotor(''),
     });
     setLookupMessage('');
     setModalOpen(true);
@@ -85,9 +90,22 @@ export default function OrdersPage() {
 
   function saveOrder(event) {
     event.preventDefault();
-    if (!form.clientId) {
-      setLookupMessage('Selecione ou localize um cliente antes de gerar a OS.');
-      return;
+
+    let clientId = form.clientId;
+    if (!clientId) {
+      if (!form.client.name.trim()) {
+        setLookupMessage('Informe o nome do cliente para gerar a demanda.');
+        return;
+      }
+
+      const savedClient = clientService.save({
+        ...form.client,
+        type: onlyNumbers(form.client.document).length > 11 ? 'Pessoa Jurídica' : form.client.type,
+        allowLogin: false,
+        accessStatus: 'Inativo',
+        userId: '',
+      });
+      clientId = savedClient.id;
     }
 
     let motorId = form.motorId;
@@ -110,7 +128,7 @@ export default function OrdersPage() {
 
       const savedMotor = motorService.save({
         ...form.motor,
-        clientId: form.clientId,
+        clientId,
       });
       motorId = savedMotor.id;
     }
@@ -127,12 +145,12 @@ export default function OrdersPage() {
 
     osService.save(
       {
-        clientId: form.clientId,
+        clientId,
         motorId,
         expectedAt: form.expectedAt,
         priority: form.priority,
         summary,
-        clientDocument: form.clientDocument,
+        clientDocument: form.client.document,
       },
       user?.name,
     );
@@ -141,32 +159,73 @@ export default function OrdersPage() {
   }
 
   function handleClientChange(clientId) {
+    const selectedClient = clients.find((client) => client.id === clientId);
     const firstMotor = motors.find((motor) => motor.clientId === clientId);
     setForm({
       ...form,
       clientId,
       motorId: firstMotor?.id || '',
+      client: selectedClient
+        ? {
+            type: selectedClient.type || 'Pessoa Física',
+            name: selectedClient.name || '',
+            document: selectedClient.document || '',
+            phone: selectedClient.phone || '',
+            email: selectedClient.email || '',
+          }
+        : emptyClientEntry,
+      motorMode: clientId && firstMotor ? form.motorMode : 'new',
       motor: { ...form.motor, clientId },
     });
   }
 
   function handleDocumentLookup(document) {
-    setForm({ ...form, clientDocument: document });
+    setForm((current) => ({
+      ...current,
+      client: {
+        ...current.client,
+        document,
+        type: onlyNumbers(document).length > 11 ? 'Pessoa Jurídica' : 'Pessoa Física',
+      },
+    }));
     const client = documentService.searchClientByDocument(document);
     if (!client) {
-      setLookupMessage('Cliente não encontrado. Cadastre o cliente completo antes de criar a OS.');
+      setForm((current) => ({
+        ...current,
+        clientId: '',
+        motorId: '',
+        motorMode: 'new',
+        motor: { ...current.motor, clientId: '' },
+      }));
+      setLookupMessage('Cliente novo. Ele será vinculado automaticamente a esta demanda.');
       return;
     }
 
     const firstMotor = motors.find((motor) => motor.clientId === client.id);
     setForm({
       ...form,
-      clientDocument: document,
       clientId: client.id,
       motorId: firstMotor?.id || '',
+      client: {
+        type: client.type || 'Pessoa Física',
+        name: client.name || '',
+        document: client.document || document,
+        phone: client.phone || '',
+        email: client.email || '',
+      },
       motor: { ...form.motor, clientId: client.id },
     });
     setLookupMessage(`Cliente localizado: ${client.name}`);
+  }
+
+  function updateClient(values) {
+    setForm((current) => ({
+      ...current,
+      client: {
+        ...current.client,
+        ...values,
+      },
+    }));
   }
 
   function updateMotor(values) {
@@ -180,16 +239,22 @@ export default function OrdersPage() {
   }
 
   async function handleCnpjLookup() {
-    const client = documentService.searchClientByDocument(form.clientDocument);
+    const client = documentService.searchClientByDocument(form.client.document);
     if (client) {
-      handleDocumentLookup(form.clientDocument);
+      handleDocumentLookup(form.client.document);
       return;
     }
 
     setCnpjLoading(true);
     try {
-      const data = await cnpjService.getCnpjData(form.clientDocument);
-      setLookupMessage(`${data.name || 'CNPJ localizado'} encontrado na BrasilAPI. Cadastre o cliente completo antes de gerar a OS.`);
+      const data = await cnpjService.getCnpjData(form.client.document);
+      updateClient({
+        type: 'Pessoa Jurídica',
+        name: data.name || form.client.name,
+        phone: data.phone || form.client.phone,
+        email: data.email || form.client.email,
+      });
+      setLookupMessage(`${data.name || 'CNPJ localizado'} encontrado. O cliente será vinculado a esta demanda.`);
     } catch (error) {
       setLookupMessage(error.message);
     } finally {
@@ -216,6 +281,7 @@ export default function OrdersPage() {
           <thead>
             <tr>
               <th>Número</th>
+              <th>Código cliente</th>
               <th>Cliente</th>
               <th>Motor</th>
               <th>Status</th>
@@ -231,6 +297,9 @@ export default function OrdersPage() {
               return (
                 <tr key={order.id}>
                   <td data-label="Número">{order.number}</td>
+                  <td data-label="Código cliente">
+                    <strong>{order.trackingCode}</strong>
+                  </td>
                   <td data-label="Cliente">{client?.name}</td>
                   <td data-label="Motor">{motor?.identification}</td>
                   <td data-label="Status">
@@ -257,39 +326,44 @@ export default function OrdersPage() {
         </table>
       </Card>
 
-      <section className="grid-2">
-        {orders.slice(0, 4).map((order) => (
-          <OSCard
-            key={order.id}
-            order={order}
-            client={clients.find((client) => client.id === order.clientId)}
-            motor={motors.find((motor) => motor.id === order.motorId)}
-            compact
-          />
-        ))}
-      </section>
-
       <Modal title="Entrada de motor e criação da OS" open={modalOpen} onClose={() => setModalOpen(false)}>
         <form className="form-grid two" onSubmit={saveOrder}>
           <div className="span-2 form-section-title">
-            <p className="eyebrow">1. Cliente</p>
-            <h3>Localize ou selecione o cliente</h3>
+            <p className="eyebrow">1. Demanda do cliente</p>
+            <h3>Informe os dados básicos nesta entrada</h3>
           </div>
+          <Select
+            label="Usar cliente já existente"
+            value={form.clientId}
+            options={[{ value: '', label: 'Novo cliente nesta demanda' }, ...clients.map((client) => ({ value: client.id, label: client.name }))]}
+            onChange={(event) => handleClientChange(event.target.value)}
+          />
+          <Input
+            label="Nome do cliente"
+            value={form.client.name}
+            onChange={(event) => updateClient({ name: event.target.value })}
+            required
+          />
           <CpfCnpjInput
-            value={form.clientDocument}
+            value={form.client.document}
             loading={cnpjLoading}
             onChange={handleDocumentLookup}
-            onValidate={() => handleDocumentLookup(form.clientDocument)}
+            onValidate={() => handleDocumentLookup(form.client.document)}
             onSearchCnpj={handleCnpjLookup}
             required={false}
           />
-          {lookupMessage ? <p className="status status-cyan span-2">{lookupMessage}</p> : null}
-          <Select
-            label="Cliente"
-            value={form.clientId}
-            options={clients.map((client) => ({ value: client.id, label: client.name }))}
-            onChange={(event) => handleClientChange(event.target.value)}
+          <Input
+            label="Telefone / WhatsApp"
+            value={form.client.phone}
+            onChange={(event) => updateClient({ phone: formatPhone(event.target.value) })}
           />
+          <Input
+            label="E-mail"
+            type="email"
+            value={form.client.email}
+            onChange={(event) => updateClient({ email: event.target.value })}
+          />
+          {lookupMessage ? <p className="status status-cyan span-2">{lookupMessage}</p> : null}
 
           <div className="span-2 form-section-title">
             <p className="eyebrow">2. Motor</p>

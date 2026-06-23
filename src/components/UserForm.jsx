@@ -1,13 +1,7 @@
 import Input from './Input.jsx';
 import Select from './Select.jsx';
-import { technicalSectorByProfile } from '../utils/technicalStages.js';
 
-const technicianProfiles = ['Técnico Mecânica', 'Técnico Usinagem', 'Técnico Elétrica'];
-
-export default function UserForm({ form, setForm, profiles, sectors, clients, employees, editing = false, errors = {} }) {
-  const isClient = form.profile === 'Cliente';
-  const isTechnician = technicianProfiles.includes(form.profile);
-
+export default function UserForm({ form, setForm, profiles, sectors, employees, editing = false, errors = {} }) {
   return (
     <div className="form-grid two">
       <Input
@@ -38,13 +32,10 @@ export default function UserForm({ form, setForm, profiles, sectors, clients, em
         options={profiles}
         onChange={(event) => {
           const profile = event.target.value;
-          const technicalSector = technicalSectorByProfile[profile] || '';
           setForm({
             ...form,
             profile,
-            linkedClientId: profile === 'Cliente' ? form.linkedClientId : '',
-            linkedEmployeeId: profile === 'Cliente' ? '' : form.linkedEmployeeId,
-            sector: technicalSector || (profile === 'Cliente' ? '' : form.sector || 'Administrativo'),
+            sector: profile === 'Técnico' ? 'Oficina' : form.sector || 'Administrativo',
           });
         }}
       />
@@ -70,33 +61,22 @@ export default function UserForm({ form, setForm, profiles, sectors, clients, em
         </>
       ) : null}
 
-      {isTechnician ? (
-        <Select
-          label="Setor"
-          value={technicalSectorByProfile[form.profile] || form.sector}
-          options={sectors.filter((sector) => ['Mecânica', 'Usinagem', 'Elétrica'].includes(sector))}
-          onChange={(event) => setForm({ ...form, sector: event.target.value })}
-        />
-      ) : null}
+      <Select
+        label="Setor"
+        value={form.sector}
+        options={form.profile === 'Técnico' ? ['Oficina'] : sectors}
+        onChange={(event) => setForm({ ...form, sector: event.target.value })}
+      />
 
-      {isClient ? (
-        <Select
-          label="Cliente vinculado"
-          value={form.linkedClientId}
-          options={[{ value: '', label: 'Selecione um cliente' }, ...clients.map((client) => ({ value: client.id, label: client.name }))]}
-          onChange={(event) => setForm({ ...form, linkedClientId: event.target.value })}
-        />
-      ) : (
-        <Select
-          label="Funcionário vinculado"
-          value={form.linkedEmployeeId}
-          options={[
-            { value: '', label: 'Selecione um funcionário' },
-            ...employees.map((employee) => ({ value: employee.id, label: `${employee.name} · ${employee.sector}` })),
-          ]}
-          onChange={(event) => setForm({ ...form, linkedEmployeeId: event.target.value })}
-        />
-      )}
+      <Select
+        label="Funcionário vinculado"
+        value={form.linkedEmployeeId}
+        options={[
+          { value: '', label: 'Selecione um funcionário' },
+          ...employees.map((employee) => ({ value: employee.id, label: `${employee.name} · ${employee.sector}` })),
+        ]}
+        onChange={(event) => setForm({ ...form, linkedEmployeeId: event.target.value })}
+      />
 
       <Select
         label="Status"
@@ -104,7 +84,6 @@ export default function UserForm({ form, setForm, profiles, sectors, clients, em
         options={['Ativo', 'Inativo']}
         onChange={(event) => setForm({ ...form, status: event.target.value })}
       />
-      {errors.linkedClientId ? <p className="form-error span-2">{errors.linkedClientId}</p> : null}
       {errors.sector ? <p className="form-error span-2">{errors.sector}</p> : null}
       {errors.status ? <p className="form-error span-2">{errors.status}</p> : null}
     </div>

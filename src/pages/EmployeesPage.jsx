@@ -24,9 +24,9 @@ const employeeTypes = [
 ];
 
 const profileByType = {
-  Mecânico: 'Técnico Mecânica',
-  'Técnico de Usinagem': 'Técnico Usinagem',
-  'Técnico Eletricista': 'Técnico Elétrica',
+  Mecânico: 'Técnico',
+  'Técnico de Usinagem': 'Técnico',
+  'Técnico Eletricista': 'Técnico',
   Recepcionista: 'Administrativo',
   Administrativo: 'Administrativo',
   Gestor: 'Gestor',
@@ -57,7 +57,7 @@ const emptyEmployee = {
   accessLogin: '',
   accessPassword: '',
   accessConfirmPassword: '',
-  accessProfile: 'Técnico Mecânica',
+  accessProfile: 'Técnico',
 };
 
 export default function EmployeesPage() {
@@ -75,7 +75,7 @@ export default function EmployeesPage() {
       accessLogin: employee.email || '',
       accessPassword: '',
       accessConfirmPassword: '',
-      accessProfile: profileByType[employee.employeeType] || 'Técnico Mecânica',
+      accessProfile: profileByType[employee.employeeType] || 'Técnico',
     });
     setCepError('');
     setModalOpen(true);
@@ -277,7 +277,7 @@ export default function EmployeesPage() {
                 <Select
                   label="Perfil de acesso"
                   value={form.accessProfile}
-                  options={['Administrador', 'Administrativo', 'Técnico Mecânica', 'Técnico Usinagem', 'Técnico Elétrica', 'Gestor']}
+                  options={['Administrador', 'Administrativo', 'Técnico', 'Gestor']}
                   onChange={(event) => setForm({ ...form, accessProfile: event.target.value })}
                 />
               </div>

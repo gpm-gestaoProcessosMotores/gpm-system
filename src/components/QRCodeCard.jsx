@@ -6,6 +6,7 @@ export default function QRCodeCard({ order }) {
     type: 'GPM_OS',
     orderId: order?.id,
     number: order?.number,
+    trackingCode: order?.trackingCode,
   });
 
   return (
@@ -16,7 +17,7 @@ export default function QRCodeCard({ order }) {
       <div>
         <p className="eyebrow">Etiqueta da Ordem</p>
         <h2>{order?.number || 'Selecione uma OS'}</h2>
-        <p className="muted">QR Code mockado para rastreio interno e futura integração com câmera.</p>
+        <p className="muted">Código para consulta do cliente: <strong>{order?.trackingCode || '-'}</strong></p>
       </div>
     </Card>
   );

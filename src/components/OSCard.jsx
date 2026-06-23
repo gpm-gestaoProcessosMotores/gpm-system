@@ -19,6 +19,9 @@ export default function OSCard({ order, client, motor, compact = false }) {
 
       <div className="meta-grid">
         <span>
+          <ClipboardList size={18} /> Código cliente: <strong>{order.trackingCode}</strong>
+        </span>
+        <span>
           <Factory size={18} /> {motor?.identification || 'Motor não localizado'}
         </span>
         {motor?.brand || motor?.model ? (

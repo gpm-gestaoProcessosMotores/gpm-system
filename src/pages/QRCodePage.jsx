@@ -27,7 +27,7 @@ export default function QRCodePage() {
         <Select
           label="Ordem de Serviço"
           value={selectedId}
-          options={orders.map((order) => ({ value: order.id, label: `${order.number} · ${order.status}` }))}
+          options={orders.map((order) => ({ value: order.id, label: `${order.number} · ${order.trackingCode} · ${order.status}` }))}
           onChange={(event) => setSelectedId(event.target.value)}
         />
       </div>

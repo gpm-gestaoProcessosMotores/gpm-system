@@ -11,17 +11,13 @@ export const defaultPermissionItems = [
   { key: 'ordens', label: 'Ordens', system: true, route: '/ordens-servico' },
   { key: 'qrcode', label: 'QR Code', system: true, route: '/qrcode' },
   { key: 'leitor', label: 'Leitor QR', system: true, route: '/leitor-qr' },
-  { key: 'fluxo', label: 'Fluxo Técnico', system: true, route: '/fluxo-tecnico' },
-  { key: 'mecanica', label: 'Mecânica', system: true, route: '/mecanica' },
-  { key: 'usinagem', label: 'Usinagem', system: true, route: '/usinagem' },
-  { key: 'eletrica', label: 'Elétrica', system: true, route: '/eletrica' },
+  { key: 'tecnico', label: 'Técnico', system: true, route: '/tecnico' },
   { key: 'laudos', label: 'Laudos', system: true, route: '/laudos' },
   { key: 'consolidacao', label: 'Consolidação', system: true, route: '/consolidacao' },
   { key: 'orcamentos', label: 'Orçamento', system: true, route: '/orcamentos' },
   { key: 'pesquisa', label: 'Pesquisa', system: true, route: '/pesquisa' },
   { key: 'relatorios', label: 'Relatórios', system: true, route: '/relatorios' },
   { key: 'historico', label: 'Histórico', system: true, route: '/historico' },
-  { key: 'clienteConsulta', label: 'Consulta Cliente', system: true, route: '/cliente/consulta-os' },
 ];
 
 export const defaultRoutePermissions = {
@@ -30,22 +26,18 @@ export const defaultRoutePermissions = {
   permissoes: ['Administrador'],
   setores: ['Administrador'],
   funcionarios: ['Administrador'],
-  clientes: ['Administrador', 'Administrativo'],
+  clientes: ['Administrador'],
   motores: ['Administrador', 'Administrativo'],
   ordens: ['Administrador', 'Administrativo', 'Gestor'],
   qrcode: ['Administrador'],
   leitor: ['Administrador'],
-  fluxo: ['Administrador'],
-  mecanica: ['Administrador', 'Técnico Mecânica'],
-  usinagem: ['Administrador', 'Técnico Usinagem'],
-  eletrica: ['Administrador', 'Técnico Elétrica'],
+  tecnico: ['Administrador', 'Técnico'],
   laudos: ['Administrador'],
   consolidacao: ['Administrador', 'Administrativo'],
   orcamentos: ['Administrador', 'Administrativo'],
   pesquisa: ['Administrador', 'Administrativo'],
   relatorios: ['Administrador', 'Gestor'],
   historico: ['Administrador', 'Administrativo', 'Gestor'],
-  clienteConsulta: ['Cliente'],
 };
 
 export const routePermissions = defaultRoutePermissions;
@@ -133,16 +125,10 @@ export function canAccess(profile, key) {
 }
 
 export function getDefaultRoute(profile) {
-  if (profile === 'Cliente') {
-    return '/cliente/consulta-os';
-  }
-
   const preferredKeys = {
     Administrador: ['dashboard', 'usuarios', 'clientes', 'ordens'],
-    Administrativo: ['ordens', 'dashboard', 'clientes', 'motores', 'orcamentos'],
-    'Técnico Mecânica': ['mecanica'],
-    'Técnico Usinagem': ['usinagem'],
-    'Técnico Elétrica': ['eletrica'],
+    Administrativo: ['ordens', 'dashboard', 'motores', 'orcamentos'],
+    Técnico: ['tecnico'],
     Gestor: ['dashboard', 'relatorios', 'ordens', 'historico'],
   };
 

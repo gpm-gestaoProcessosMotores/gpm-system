@@ -20,11 +20,8 @@ create table if not exists public.user_profiles (
     profile in (
       'Administrador',
       'Administrativo',
-      'Técnico Mecânica',
-      'Técnico Usinagem',
-      'Técnico Elétrica',
-      'Gestor',
-      'Cliente'
+      'Técnico',
+      'Gestor'
     )
   ),
   sector text,
@@ -95,7 +92,7 @@ begin
     and status = 'Ativo'
   limit 1;
 
-  if user_profile is null or user_profile = 'Cliente' then
+  if user_profile is null then
     raise exception 'Sem permissão para sincronizar dados do GPM.';
   end if;
 
@@ -153,16 +150,7 @@ using (
     select 1
     from public.current_gpm_profile() current_profile
     where (
-        current_profile.profile <> 'Cliente'
-        or (
-          current_profile.profile = 'Cliente'
-          and (
-            (collection = 'clients' and record_id = current_profile.linked_client_id)
-            or (collection = 'motors' and payload->>'clientId' = current_profile.linked_client_id)
-            or (collection = 'orders' and payload->>'clientId' = current_profile.linked_client_id)
-            or collection in ('history')
-          )
-        )
+        current_profile.profile is not null
       )
   )
 );
@@ -176,14 +164,14 @@ using (
   exists (
     select 1
     from public.current_gpm_profile() current_profile
-    where current_profile.profile <> 'Cliente'
+    where current_profile.profile is not null
   )
 )
 with check (
   exists (
     select 1
     from public.current_gpm_profile() current_profile
-    where current_profile.profile <> 'Cliente'
+    where current_profile.profile is not null
   )
 );
 
@@ -201,19 +189,14 @@ delete from public.user_profiles
 where email in (
   'admin@gpm.com',
   'adm@gpm.com',
-  'mecanica@gpm.com',
-  'usinagem@gpm.com',
-  'eletrica@gpm.com',
+  'tecnico@gpm.com',
   'gestor@gpm.com',
-  'cliente@gpm.com',
   'admin@gmail.com',
   'adm@gmail.com',
-  'mecanica@gmail.com',
-  'usinagem@gmail.com',
-  'eletrica@gmail.com',
-  'gestor@gmail.com',
-  'cliente@gmail.com'
-);
+  'tecnico@gmail.com',
+  'gestor@gmail.com'
+)
+or login in ('mecanica', 'usinagem', 'eletrica', 'cliente');
 
 insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
 select id, 'Carla Andrade', email, 'admin', 'Administrador', 'Gestão', 'Ativo'
@@ -233,21 +216,9 @@ where email = 'adm@gmail.com'
 on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
 
 insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
-select id, 'João Batista', email, 'mecanica', 'Técnico Mecânica', 'Mecânica', 'Ativo'
+select id, 'Equipe Técnica', email, 'tecnico', 'Técnico', 'Oficina', 'Ativo'
 from auth.users
-where email = 'mecanica@gmail.com'
-on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
-
-insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
-select id, 'Mariana Costa', email, 'usinagem', 'Técnico Usinagem', 'Usinagem', 'Ativo'
-from auth.users
-where email = 'usinagem@gmail.com'
-on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
-
-insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
-select id, 'Diego Santos', email, 'eletrica', 'Técnico Elétrica', 'Elétrica', 'Ativo'
-from auth.users
-where email = 'eletrica@gmail.com'
+where email = 'tecnico@gmail.com'
 on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
 
 insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, status)
@@ -256,14 +227,3 @@ from auth.users
 where email = 'gestor@gmail.com'
 on conflict (email) do update set auth_user_id = excluded.auth_user_id, login = excluded.login, profile = excluded.profile, sector = excluded.sector, status = excluded.status;
 
-insert into public.user_profiles (auth_user_id, name, email, login, profile, sector, linked_client_id, status)
-select id, 'Cliente Teste', email, 'cliente', 'Cliente', null, 'cli-001', 'Ativo'
-from auth.users
-where email = 'cliente@gmail.com'
-on conflict (email) do update set
-  auth_user_id = excluded.auth_user_id,
-  login = excluded.login,
-  profile = excluded.profile,
-  sector = excluded.sector,
-  linked_client_id = excluded.linked_client_id,
-  status = excluded.status;

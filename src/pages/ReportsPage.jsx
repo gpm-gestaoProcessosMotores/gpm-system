@@ -2,7 +2,14 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import Card from '../components/Card.jsx';
 import { reportService } from '../services/reportService.js';
 
-const colors = ['#17c4d8', '#0879c9', '#16a34a', '#d97706', '#dc2626', '#526276'];
+const colors = [
+  'hsl(var(--primary))',
+  'hsl(var(--accent-foreground))',
+  'hsl(var(--ring))',
+  'hsl(var(--secondary-foreground))',
+  'hsl(var(--status-warning-fg))',
+  'hsl(var(--destructive))',
+];
 
 export default function ReportsPage() {
   const report = reportService.management();
@@ -52,7 +59,7 @@ export default function ReportsPage() {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="horas" fill="#17c4d8" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="horas" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -66,7 +73,7 @@ export default function ReportsPage() {
             <XAxis dataKey="name" />
             <YAxis allowDecimals={false} />
             <Tooltip />
-            <Bar dataKey="total" fill="#0879c9" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="total" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </Card>

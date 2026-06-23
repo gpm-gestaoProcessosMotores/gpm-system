@@ -1,9 +1,7 @@
 export const stageOrder = ['mecanica', 'usinagem', 'eletrica'];
 
 export const technicalSectorByProfile = {
-  'Técnico Mecânica': 'Mecânica',
-  'Técnico Usinagem': 'Usinagem',
-  'Técnico Elétrica': 'Elétrica',
+  Técnico: '',
 };
 
 export const technicalChecklists = {
@@ -58,6 +56,10 @@ export const stageTemplates = {
 };
 
 export function getTechnicalSectorByProfile(profile, fallbackSector = '') {
+  if (profile === 'Técnico') {
+    return '';
+  }
+
   return technicalSectorByProfile[profile] || fallbackSector || '';
 }
 

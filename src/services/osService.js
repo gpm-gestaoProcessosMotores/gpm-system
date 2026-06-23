@@ -1,22 +1,26 @@
 import { STORAGE_KEYS, makeId, readCollection, removeItem, upsertItem, writeCollection } from './storageService.js';
 import { historyService } from './historyService.js';
 import { formatOSCode } from '../utils/validators.js';
-import { getTechnicalSectorByProfile, normalizeTechnicalStages, stageOrder, stageTemplates } from '../utils/technicalStages.js';
+import { normalizeTechnicalStages, stageOrder, stageTemplates } from '../utils/technicalStages.js';
 
 export { stageOrder };
-
-function getStageKeyBySector(sector) {
-  const map = {
-    Mecânica: 'mecanica',
-    Usinagem: 'usinagem',
-    Elétrica: 'eletrica',
-  };
-  return map[sector];
-}
 
 function buildOrderNumber() {
   const next = readCollection(STORAGE_KEYS.orders).length + 1;
   return `OS${String(next).padStart(4, '0')}`;
+}
+
+function makeTrackingCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 8 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+}
+
+function getTrackingCode(order) {
+  return order.trackingCode || order.publicCode || '';
+}
+
+function normalizeLookupCode(value) {
+  return formatOSCode(value).replace(/[^A-Z0-9]/g, '');
 }
 
 function getNextSector(stages) {
@@ -35,7 +39,11 @@ function getValidOrders() {
       const motor = motorById.get(order.motorId);
       return Boolean(motor && validClientIds.has(order.clientId) && motor.clientId === order.clientId);
     })
-    .map((order) => ({ ...order, stages: normalizeTechnicalStages(order.stages) }));
+    .map((order) => ({
+      ...order,
+      trackingCode: getTrackingCode(order) || order.number,
+      stages: normalizeTechnicalStages(order.stages),
+    }));
 }
 
 export const osService = {
@@ -43,7 +51,12 @@ export const osService = {
   getOrders: () => getValidOrders(),
   findById: (id) => getValidOrders().find((order) => order.id === id),
   getOrdersByCurrentSector: (sector) => getValidOrders().filter((order) => order.currentSector === sector),
-  getOrderByCode: (code) => getValidOrders().find((order) => formatOSCode(order.number) === formatOSCode(code)),
+  getOrderByCode: (code) => {
+    const lookupCode = normalizeLookupCode(code);
+    return getValidOrders().find((order) =>
+      [order.number, order.trackingCode, order.publicCode].filter(Boolean).some((value) => normalizeLookupCode(value) === lookupCode),
+    );
+  },
   getOrdersByClient: (clientId) => getValidOrders().filter((order) => order.clientId === clientId),
   getClientOrderStatus: (clientId, osCode) => {
     const order = osService.getOrderByCode(osCode);
@@ -57,13 +70,8 @@ export const osService = {
     if (!user) {
       return [];
     }
-    if (user.profile === 'Cliente') {
-      return orders.filter((order) => order.clientId === user.linkedClientId);
-    }
-    if (user.profile?.startsWith('Técnico')) {
-      const userSector = getTechnicalSectorByProfile(user.profile, user.sector);
-      const stageKey = getStageKeyBySector(userSector);
-      return orders.filter((order) => order.currentSector === userSector || order.stages?.[stageKey]?.status !== 'Pendente');
+    if (user.profile === 'Técnico') {
+      return orders.filter((order) => order.status !== 'Concluída');
     }
     return orders;
   },
@@ -75,6 +83,7 @@ export const osService = {
           ...order,
           id: makeId('os'),
           number: buildOrderNumber(),
+          trackingCode: makeTrackingCode(),
           status: 'Aberta',
           currentSector: 'Mecânica',
           openedAt: new Date().toISOString(),

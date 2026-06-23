@@ -11,11 +11,8 @@ declare
   users jsonb := '[
     {"email":"admin@gmail.com","password":"123456"},
     {"email":"adm@gmail.com","password":"123456"},
-    {"email":"mecanica@gmail.com","password":"123456"},
-    {"email":"usinagem@gmail.com","password":"123456"},
-    {"email":"eletrica@gmail.com","password":"123456"},
-    {"email":"gestor@gmail.com","password":"123456"},
-    {"email":"cliente@gmail.com","password":"123456"}
+    {"email":"tecnico@gmail.com","password":"123456"},
+    {"email":"gestor@gmail.com","password":"123456"}
   ]'::jsonb;
 begin
   for item in select * from jsonb_array_elements(users)

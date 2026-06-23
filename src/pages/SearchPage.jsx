@@ -49,6 +49,7 @@ export default function SearchPage() {
         const motor = motors.find((item) => item.id === order.motorId);
         const generalFields = [
           order.number,
+          order.trackingCode,
           order.status,
           order.currentSector,
           order.summary,
@@ -87,7 +88,7 @@ export default function SearchPage() {
           <Input
             label="Busca geral"
             value={filters.term}
-            placeholder="Digite OS, cliente, documento, marca, modelo ou código do motor"
+            placeholder="Digite código cliente, OS, cliente, documento, marca, modelo ou código do motor"
             onChange={(event) => setFilters({ ...filters, term: event.target.value })}
           />
           <Input

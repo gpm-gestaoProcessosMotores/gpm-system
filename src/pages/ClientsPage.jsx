@@ -1,9 +1,8 @@
-import { Edit3, KeyRound, Plus, Trash2 } from 'lucide-react';
+import { Edit3, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import CepInput from '../components/CepInput.jsx';
-import ClientAccessForm from '../components/ClientAccessForm.jsx';
 import CpfCnpjInput from '../components/CpfCnpjInput.jsx';
 import Input from '../components/Input.jsx';
 import Modal from '../components/Modal.jsx';
@@ -12,7 +11,6 @@ import { cepService } from '../services/cepService.js';
 import { clientService } from '../services/clientService.js';
 import { documentService } from '../services/documentService.js';
 import { cnpjService } from '../services/cnpjService.js';
-import { userService } from '../services/userService.js';
 import { formatPhone, isEmail, onlyNumbers, validateCNPJ, validateCPF } from '../utils/validators.js';
 
 const emptyClient = {
@@ -33,16 +31,9 @@ const emptyClient = {
   allowLogin: false,
   accessStatus: 'Ativo',
   userId: '',
-  accessLogin: '',
-  accessPassword: '',
-  accessConfirmPassword: '',
 };
 
-function hasAccess(client) {
-  return userService.getUsers().some((user) => user.linkedClientId === client.id && user.profile === 'Cliente');
-}
-
-function validateClient(form, creatingAccess) {
+function validateClient(form) {
   const errors = {};
   const digits = onlyNumbers(form.document);
 
@@ -52,11 +43,6 @@ function validateClient(form, creatingAccess) {
   if (digits.length === 11 && form.document !== '000.000.000-00' && form.document !== '111.111.111-11' && !validateCPF(form.document)) errors.document = 'CPF inválido.';
   if (digits.length === 14 && !validateCNPJ(form.document)) errors.document = 'CNPJ inválido.';
   if (![11, 14].includes(digits.length)) errors.document = 'Informe CPF ou CNPJ válido.';
-  if (form.allowLogin) {
-    if (!form.accessLogin.trim()) errors.accessLogin = 'Informe o e-mail/login do cliente.';
-    if (creatingAccess && !form.accessPassword) errors.accessPassword = 'Informe a senha inicial.';
-    if (form.accessPassword !== form.accessConfirmPassword) errors.accessConfirmPassword = 'As senhas não conferem.';
-  }
 
   return errors;
 }
@@ -75,13 +61,11 @@ export default function ClientsPage() {
   }
 
   function openForm(client = emptyClient) {
-    const linkedUser = userService.getUsers().find((user) => user.linkedClientId === client.id);
     setForm({
       ...emptyClient,
       ...client,
-      accessLogin: linkedUser?.login || linkedUser?.email || client.email || '',
-      accessPassword: '',
-      accessConfirmPassword: '',
+      allowLogin: false,
+      userId: '',
     });
     setErrors({});
     setMessage('');
@@ -114,9 +98,8 @@ export default function ClientsPage() {
       setForm({
         ...emptyClient,
         ...existingClient,
-        accessLogin: existingClient.email || '',
-        accessPassword: '',
-        accessConfirmPassword: '',
+        allowLogin: false,
+        userId: '',
       });
       setMessage('Cliente já cadastrado. Dados carregados automaticamente.');
       return;
@@ -145,34 +128,19 @@ export default function ClientsPage() {
     }
   }
 
-  function createClientAccess(client) {
-    clientService.createClientAccess(client.id, {
-      name: client.name,
-      email: client.email,
-      login: form.accessLogin || client.email,
-      password: form.accessPassword,
-      status: form.accessStatus,
-    });
-  }
-
   function saveClient(event) {
     event.preventDefault();
-    const creatingAccess = form.allowLogin && (!form.id || !hasAccess(form));
-    const validationErrors = validateClient(form, creatingAccess);
+    const validationErrors = validateClient(form);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).some((key) => validationErrors[key])) {
       return;
     }
 
     const payload = { ...form };
-    delete payload.accessLogin;
-    delete payload.accessPassword;
-    delete payload.accessConfirmPassword;
-    const savedClient = clientService.save(payload);
-
-    if (form.allowLogin && (form.accessPassword || creatingAccess)) {
-      createClientAccess(savedClient);
-    }
+    payload.allowLogin = false;
+    payload.accessStatus = 'Inativo';
+    payload.userId = '';
+    clientService.save(payload);
 
     refresh();
     setModalOpen(false);
@@ -198,9 +166,7 @@ export default function ClientsPage() {
                 <p className="eyebrow">{client.document}</p>
                 <h3>{client.name}</h3>
               </div>
-              <span className={`status ${hasAccess(client) ? 'status-success' : 'status-muted'}`}>
-                {hasAccess(client) ? 'Com acesso' : 'Sem acesso'}
-              </span>
+              <span className="status status-muted">Sem login</span>
             </div>
             <p className="muted">{client.address}</p>
             <div className="meta-grid">
@@ -212,13 +178,6 @@ export default function ClientsPage() {
             <div className="row-actions">
               <Button variant="outline" icon={Edit3} onClick={() => openForm(client)}>
                 Editar
-              </Button>
-              <Button
-                variant="outline"
-                icon={KeyRound}
-                onClick={() => openForm({ ...client, allowLogin: true })}
-              >
-                Criar acesso
               </Button>
               <Button
                 variant="danger"
@@ -275,7 +234,7 @@ export default function ClientsPage() {
             type="email"
             value={form.email}
             error={errors.email}
-            onChange={(event) => setForm({ ...form, email: event.target.value, accessLogin: form.accessLogin || event.target.value })}
+            onChange={(event) => setForm({ ...form, email: event.target.value })}
             required
           />
           <CepInput
@@ -296,7 +255,6 @@ export default function ClientsPage() {
             <textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} />
           </label>
 
-          <ClientAccessForm form={form} setForm={setForm} errors={errors} />
           {message ? <p className="status status-cyan span-2">{message}</p> : null}
 
           <div className="form-actions span-2">
