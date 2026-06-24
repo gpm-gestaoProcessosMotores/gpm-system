@@ -55,26 +55,63 @@ export default function BudgetPage() {
 
   return (
     <div className="content-grid">
-      <section className="grid-2">
-        <Card className="stage-card">
-          <div className="section-heading">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Administrativo</p>
+          <h2>Orçamentos e aprovações</h2>
+        </div>
+      </div>
+
+      <section className="vertical-block-stack">
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
             <div>
-              <p className="eyebrow">Composição</p>
-              <h2>Orçamento</h2>
+              <span className="technical-block-number">Bloco 01</span>
+              <h3>Ordem de serviço</h3>
             </div>
           </div>
+          <Select
+            label="OS pronta para orçamento"
+            value={form.orderId}
+            options={readyOrders.map((order) => ({
+              value: order.id,
+              label: `${order.number} · ${clients.find((client) => client.id === order.clientId)?.name}`,
+            }))}
+            onChange={(event) => setForm({ ...form, orderId: event.target.value })}
+          />
+        </Card>
 
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 02</span>
+              <h3>Base técnica</h3>
+              <p>{selectedOrder?.number || 'Selecione uma OS'}</p>
+            </div>
+          </div>
+          {selectedOrder ? (
+            <div className="vertical-record-list">
+              {stageOrder.map((key) => (
+                <article className="vertical-record compact-record" key={key}>
+                  <strong>{selectedOrder.stages[key].sector}</strong>
+                  <span>{selectedOrder.stages[key].report || 'Sem laudo registrado'}</span>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="checklist-empty">Nenhuma OS pronta para orçamento.</p>
+          )}
+        </Card>
+
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 03</span>
+              <h3>Composição do orçamento</h3>
+            </div>
+          </div>
           <div className="form-grid">
-            <Select
-              label="Ordem de Serviço"
-              value={form.orderId}
-              options={readyOrders.map((order) => ({
-                value: order.id,
-                label: `${order.number} · ${clients.find((client) => client.id === order.clientId)?.name}`,
-              }))}
-              onChange={(event) => setForm({ ...form, orderId: event.target.value })}
-            />
-            <label className="field">
+            <label className="field vertical-description-field">
               <span>Descrição do serviço</span>
               <textarea
                 value={form.serviceDescription}
@@ -98,67 +135,63 @@ export default function BudgetPage() {
               />
             </div>
             <Input label="Prazo" value={form.deadline} onChange={(event) => setForm({ ...form, deadline: event.target.value })} />
-            <Card className="metric-card">
-              <span>Valor total</span>
-              <strong>{formatCurrency(total)}</strong>
-            </Card>
-            <div className="row-actions">
-              <Button icon={Send} disabled={!hasReadyOrder} onClick={() => saveBudget('Enviado')}>
-                Enviar orçamento
-              </Button>
-              <Button variant="secondary" icon={CheckCircle2} disabled={!hasReadyOrder} onClick={() => saveBudget('Aprovado')}>
-                Aprovar
-              </Button>
-              <Button variant="danger" icon={XCircle} disabled={!hasReadyOrder} onClick={() => saveBudget('Reprovado')}>
-                Reprovar
-              </Button>
+          </div>
+        </Card>
+
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 04</span>
+              <h3>Resumo e ações</h3>
             </div>
+            <StatusBadge status={form.status} />
+          </div>
+          <div className="budget-total">
+            <span>Valor total</span>
+            <strong>{formatCurrency(total)}</strong>
+          </div>
+          <div className="row-actions">
+            <Button icon={Send} disabled={!hasReadyOrder} onClick={() => saveBudget('Enviado')}>
+              Enviar orçamento
+            </Button>
+            <Button variant="secondary" icon={CheckCircle2} disabled={!hasReadyOrder} onClick={() => saveBudget('Aprovado')}>
+              Aprovar
+            </Button>
+            <Button variant="danger" icon={XCircle} disabled={!hasReadyOrder} onClick={() => saveBudget('Reprovado')}>
+              Reprovar
+            </Button>
           </div>
         </Card>
 
-        <Card className="stage-card">
-          <p className="eyebrow">Base técnica</p>
-          <h2>{selectedOrder?.number || 'Selecione uma OS'}</h2>
-          {selectedOrder ? (
-            stageOrder.map((key) => (
-              <div className="upload-drop" key={key}>
-                <strong>{selectedOrder.stages[key].sector}</strong>
-                <span>{selectedOrder.stages[key].report || 'Sem laudo registrado'}</span>
-              </div>
-            ))
-          ) : (
-            <p className="muted">Nenhuma OS pronta para orçamento.</p>
-          )}
-        </Card>
-      </section>
-
-      <section>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Orçamentos</p>
-            <h2>Histórico administrativo</h2>
+        <Card className="vertical-block vertical-history-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 05</span>
+              <h3>Histórico administrativo</h3>
+            </div>
+            <span className="technical-block-count">{budgets.length} orçamento(s)</span>
           </div>
-        </div>
-        <div className="grid-3">
-          {budgets.map((budget) => {
-            const order = orders.find((item) => item.id === budget.orderId);
-            return (
-              <Card className="stage-card" key={budget.id}>
-                <div className="stage-header">
-                  <h3>{order?.number}</h3>
-                  <StatusBadge status={budget.status} />
-                </div>
-                <p>{budget.serviceDescription}</p>
-                <div className="meta-grid">
-                  <span>Peças: {formatCurrency(budget.parts)}</span>
-                  <span>Mão de obra: {formatCurrency(budget.labor)}</span>
-                  <span>Total: {formatCurrency(budget.total)}</span>
-                  <span>Prazo: {budget.deadline}</span>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+          <div className="vertical-record-list">
+            {budgets.map((budget) => {
+              const order = orders.find((item) => item.id === budget.orderId);
+              return (
+                <article className="vertical-record" key={budget.id}>
+                  <div className="stage-header">
+                    <h3>{order?.number}</h3>
+                    <StatusBadge status={budget.status} />
+                  </div>
+                  <p>{budget.serviceDescription}</p>
+                  <div className="meta-grid">
+                    <span>Peças: {formatCurrency(budget.parts)}</span>
+                    <span>Mão de obra: {formatCurrency(budget.labor)}</span>
+                    <span>Total: {formatCurrency(budget.total)}</span>
+                    <span>Prazo: {budget.deadline}</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </Card>
       </section>
     </div>
   );

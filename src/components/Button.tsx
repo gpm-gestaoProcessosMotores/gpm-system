@@ -29,7 +29,7 @@ export default function Button({
       className={`btn btn-${variant} btn-${size} ${className}`.trim()}
       whileTap={disabled ? undefined : { scale: 0.98 }}
       whileHover={disabled ? undefined : { y: -1 }}
-      transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
       {...props}
     >
       {Icon ? <Icon size={20} aria-hidden="true" /> : null}

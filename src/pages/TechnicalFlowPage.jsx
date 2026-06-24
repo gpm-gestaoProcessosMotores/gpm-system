@@ -1,9 +1,11 @@
-import { FilePlus2, Play, Save, SquareCheckBig } from 'lucide-react';
+import { Play, Save, SquareCheckBig } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import Checklist from '../components/Checklist.jsx';
+import FileUpload from '../components/FileUpload.jsx';
 import Select from '../components/Select.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -115,6 +117,16 @@ export default function TechnicalFlowPage() {
   function finishStage(stageKey) {
     const draft = draftStages[stageKey];
 
+    if (!draft.checklist.length) {
+      window.alert('Crie pelo menos um item no checklist antes de finalizar a etapa.');
+      return;
+    }
+
+    if (draft.checklist.some((item) => !item.done)) {
+      window.alert('Conclua todos os itens do checklist antes de finalizar a etapa.');
+      return;
+    }
+
     if (!draft.report.trim()) {
       window.alert('Descreva o serviço realizado antes de finalizar a etapa.');
       return;
@@ -194,138 +206,154 @@ export default function TechnicalFlowPage() {
         </div>
       </Card>
 
-      <section className="technical-workspace">
-        <Card className="technical-stage-rail">
-          <div className="technical-rail-header">
-            <div>
-              <p className="eyebrow">Etapas do serviço</p>
-              <strong>Fluxo técnico</strong>
+      {activeStage ? (
+        <section className="technical-block-layout">
+          <Card className="technical-block technical-block-stages" interactive={false}>
+            <div className="technical-block-heading">
+              <div>
+                <span className="technical-block-number">Bloco 01</span>
+                <h3>Etapa do serviço</h3>
+              </div>
+              <span className="technical-block-count">{completedStages}/3</span>
             </div>
-            <span>{completedStages}/3</span>
-          </div>
-          <div className="technical-progress" aria-hidden="true">
-            <span style={{ width: `${(completedStages / stageOrder.length) * 100}%` }} />
-          </div>
-          <div className="technical-stepper" aria-label="Etapas técnicas">
-            {stageOrder.map((stageKey) => {
-              const stage = draftStages[stageKey] || order.stages?.[stageKey];
-              const locked = isLocked(stageKey);
-
-              return (
-                <button
-                  type="button"
-                  className={`technical-step ${activeStageKey === stageKey ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`}
-                  key={stageKey}
-                  onClick={() => setActiveStageKey(stageKey)}
-                >
-                  <span className="technical-step-index">{stageOrder.indexOf(stageKey) + 1}</span>
-                  <span>
-                    <strong>{stage.sector}</strong>
-                    <small>{locked ? 'Aguardando etapa anterior' : stage.status}</small>
-                  </span>
-                  <StatusBadge status={stage.status} />
-                </button>
-              );
-            })}
-          </div>
-        </Card>
-
-        {activeStage ? (
-          <Card className="stage-card technical-stage-panel">
-            <div className="stage-header">
-              <div>
-                <p className="eyebrow">Etapa selecionada</p>
-                <h3>{activeStage.sector}</h3>
-              </div>
-              <StatusBadge status={activeStage.status} />
+            <div className="technical-progress" aria-hidden="true">
+              <span style={{ width: `${(completedStages / stageOrder.length) * 100}%` }} />
             </div>
+            <div className="technical-stepper" aria-label="Etapas técnicas">
+              {stageOrder.map((stageKey) => {
+                const stage = draftStages[stageKey] || order.stages?.[stageKey];
+                const locked = isLocked(stageKey);
 
-            <div className="technical-stage-meta">
-              <div>
-                <span>Início</span>
-                <strong>{formatDateTime(activeStage.startedAt)}</strong>
-              </div>
-              <div>
-                <span>Término</span>
-                <strong>{formatDateTime(activeStage.finishedAt)}</strong>
-              </div>
-              <div>
-                <span>Técnico</span>
-                <strong>{activeStage.technician || user?.name}</strong>
-              </div>
+                return (
+                  <button
+                    type="button"
+                    className={`technical-step ${activeStageKey === stageKey ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`}
+                    key={stageKey}
+                    onClick={() => setActiveStageKey(stageKey)}
+                  >
+                    <span className="technical-step-index">{stageOrder.indexOf(stageKey) + 1}</span>
+                    <span>
+                      <strong>{stage.sector}</strong>
+                      <small>{locked ? 'Aguardando etapa anterior' : stage.status}</small>
+                    </span>
+                    <StatusBadge status={stage.status} />
+                  </button>
+                );
+              })}
             </div>
+          </Card>
 
-            <div className="technical-editor-grid">
-              <div className="technical-checklist-box">
-                <p className="eyebrow">Checklist</p>
-                <Checklist
-                  items={activeStage.checklist}
-                  readonly={activeDisabled}
-                  onChange={(checklist) => updateDraft(activeStageKey, { checklist })}
-                />
+          <motion.div
+            className="technical-stage-details"
+            key={activeStageKey}
+            initial={{ opacity: 0.65, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Card className="technical-block technical-block-selected technical-stage-shadow" interactive={false}>
+              <div className="technical-block-heading">
+                <div>
+                  <span className="technical-block-number">Bloco 02</span>
+                  <h3>Etapa selecionada</h3>
+                  <p>{activeStage.sector}</p>
+                </div>
+                <StatusBadge status={activeStage.status} />
               </div>
-
-              <div className="technical-report-box">
-                <label className="field">
-                  <span>Serviço realizado / laudo técnico</span>
-                  <textarea
-                    value={activeStage.report}
-                    disabled={activeDisabled}
-                    onChange={(event) => updateDraft(activeStageKey, { report: event.target.value })}
-                  />
-                </label>
-
-                <label className="upload-drop compact-upload">
-                  <FilePlus2 size={20} />
-                  <span>Anexar fotos/PDFs mockados</span>
-                  <input
-                    type="file"
-                    multiple
-                    disabled={activeDisabled}
-                    onChange={(event) => {
-                      const fileNames = Array.from(event.target.files || []).map((file) => file.name);
-                      updateDraft(activeStageKey, { attachments: [...activeStage.attachments, ...fileNames] });
-                    }}
-                  />
-                </label>
-
-                <div className="attachment-list">
-                  {activeStage.attachments.length ? activeStage.attachments.map((file) => <span key={file}>{file}</span>) : <span>Sem anexos</span>}
+              <div className="technical-stage-meta">
+                <div>
+                  <span>Início</span>
+                  <strong>{formatDateTime(activeStage.startedAt)}</strong>
+                </div>
+                <div>
+                  <span>Término</span>
+                  <strong>{formatDateTime(activeStage.finishedAt)}</strong>
+                </div>
+                <div>
+                  <span>Técnico</span>
+                  <strong>{activeStage.technician || user?.name}</strong>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="row-actions technical-actions">
-              <Button
-                icon={Play}
-                disabled={activeDisabled || activeStage.status !== 'Pendente'}
-                onClick={() => startStage(activeStageKey)}
-              >
-                Iniciar
-              </Button>
-              <Button
-                variant="outline"
-                icon={Save}
+            <Card className="technical-block technical-block-checklist technical-stage-shadow" interactive={false}>
+              <div className="technical-block-heading">
+                <div>
+                  <span className="technical-block-number">Bloco 03</span>
+                  <h3>Checklist</h3>
+                </div>
+                <span className="technical-block-count">{activeStage.checklist.length} item(ns)</span>
+              </div>
+              <Checklist
+                items={activeStage.checklist}
+                readonly={activeDisabled}
+                editable
+                onChange={(checklist) => updateDraft(activeStageKey, { checklist })}
+              />
+            </Card>
+
+            <Card className="technical-block technical-block-description technical-stage-shadow" interactive={false}>
+              <div className="technical-block-heading">
+                <div>
+                  <span className="technical-block-number">Bloco 04</span>
+                  <h3>Descrição</h3>
+                </div>
+              </div>
+              <label className="field">
+                <span>Serviço realizado / laudo técnico</span>
+                <textarea
+                  value={activeStage.report}
+                  disabled={activeDisabled}
+                  onChange={(event) => updateDraft(activeStageKey, { report: event.target.value })}
+                />
+              </label>
+            </Card>
+
+            <Card className="technical-block technical-block-files technical-stage-shadow" interactive={false}>
+              <div className="technical-block-heading">
+                <div>
+                  <span className="technical-block-number">Bloco 05</span>
+                  <h3>Envio de arquivos</h3>
+                </div>
+                <span className="technical-block-count">{activeStage.attachments.length} arquivo(s)</span>
+              </div>
+              <FileUpload
+                files={activeStage.attachments}
                 disabled={activeDisabled}
-                onClick={() => saveStage(activeStageKey)}
-              >
-                Salvar
-              </Button>
-              <Button
-                variant="secondary"
-                icon={SquareCheckBig}
-                disabled={activeDisabled || activeStage.status !== 'Em andamento'}
-                onClick={() => finishStage(activeStageKey)}
-              >
-                Finalizar
-              </Button>
-            </div>
+                title="Evidências técnicas"
+                description="Fotos, PDFs ou documentos da execução"
+                onChange={(attachments) => updateDraft(activeStageKey, { attachments })}
+              />
+            </Card>
 
-            {activeLocked ? <p className="form-error">A etapa anterior ainda não foi concluída.</p> : null}
-            {!activeAllowed ? <p className="form-error">Seu perfil não permite editar esta etapa.</p> : null}
-          </Card>
-        ) : null}
-      </section>
+            <div className="technical-flow-footer">
+              <div>
+                {activeLocked ? <p className="form-error">A etapa anterior ainda não foi concluída.</p> : null}
+                {!activeAllowed ? <p className="form-error">Seu perfil não permite editar esta etapa.</p> : null}
+              </div>
+              <div className="row-actions technical-actions">
+                <Button
+                  icon={Play}
+                  disabled={activeDisabled || activeStage.status !== 'Pendente'}
+                  onClick={() => startStage(activeStageKey)}
+                >
+                  Iniciar
+                </Button>
+                <Button variant="outline" icon={Save} disabled={activeDisabled} onClick={() => saveStage(activeStageKey)}>
+                  Salvar
+                </Button>
+                <Button
+                  variant="secondary"
+                  icon={SquareCheckBig}
+                  disabled={activeDisabled || activeStage.status !== 'Em andamento'}
+                  onClick={() => finishStage(activeStageKey)}
+                >
+                  Finalizar
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+      ) : null}
     </div>
   );
 }

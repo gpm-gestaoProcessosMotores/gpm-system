@@ -53,6 +53,21 @@ export const navigationItems: NavigationItem[] = [
   { key: 'historico', label: 'Histórico', path: '/historico', icon: History },
 ];
 
+const navigationGroups = [
+  {
+    label: 'Operação',
+    keys: ['dashboard', 'ordens', 'tecnico', 'qrcode', 'leitor', 'laudos', 'consolidacao', 'orcamentos'],
+  },
+  {
+    label: 'Cadastros',
+    keys: ['clientes', 'motores', 'setores', 'funcionarios', 'usuarios', 'permissoes'],
+  },
+  {
+    label: 'Análise',
+    keys: ['pesquisa', 'relatorios', 'historico'],
+  },
+];
+
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
@@ -95,6 +110,14 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const visibleItems = navigationItems
     .map((item) => ({ ...item, label: permissionLabels[item.key] || item.label }))
     .filter((item) => canAccess(user?.profile, item.key));
+  const visibleGroups = navigationGroups
+    .map((group) => ({
+      ...group,
+      items: group.keys
+        .map((key) => visibleItems.find((item) => item.key === key))
+        .filter((item): item is NavigationItem => Boolean(item)),
+    }))
+    .filter((group) => group.items.length);
 
   useEffect(() => {
     const refreshPermissions = () => setPermissionVersion((version) => version + 1);
@@ -128,11 +151,16 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         <nav className="side-nav" aria-label="Menu principal">
-          {visibleItems.map((item) => (
-            <NavLink key={item.key} to={item.path} onClick={onClose}>
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </NavLink>
+          {visibleGroups.map((group) => (
+            <div className="nav-group" key={group.label}>
+              <span className="nav-group-label">{group.label}</span>
+              {group.items.map((item) => (
+                <NavLink key={item.key} to={item.path} onClick={onClose}>
+                  <item.icon size={18} />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
 

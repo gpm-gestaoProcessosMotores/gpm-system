@@ -1,10 +1,9 @@
-import { BadgeCheck, LockKeyhole, LogIn, UserRound } from 'lucide-react';
+import { BadgeCheck, LockKeyhole, LogIn, Search, UserRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import Input from '../components/Input.jsx';
-import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { initialUsers } from '../mocks/initialData.js';
 import { getDefaultRoute } from '../utils/permissions.js';
@@ -34,9 +33,6 @@ export default function LoginPage() {
 
   return (
     <main className="login-page bg-background text-foreground">
-      <div className="public-theme-action">
-        <ThemeToggle />
-      </div>
       <motion.section
         className="login-card"
         initial={{ opacity: 0, scale: 0.98, y: 18 }}
@@ -72,7 +68,8 @@ export default function LoginPage() {
             <p>Use seu e-mail ou login para acessar o painel.</p>
           </div>
           <Link className="btn btn-outline" to="/consulta">
-            Consultar OS sem login
+            <Search size={18} aria-hidden="true" />
+            <span>Consultar OS sem login</span>
           </Link>
           {user ? (
             <p className="login-session">

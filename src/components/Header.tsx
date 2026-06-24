@@ -5,7 +5,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { canAccess } from '../utils/permissions.js';
 import Button from './Button.tsx';
-import ThemeToggle from './ThemeToggle.tsx';
 
 const titles: Record<string, string> = {
   '/dashboard': 'Dashboard Operacional',
@@ -71,7 +70,6 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
         <h1>{title}</h1>
       </div>
       <div className="header-actions">
-        <ThemeToggle />
         {canAccess(user?.profile, 'pesquisa') ? (
           <form className="desktop-search" onSubmit={handleSearch}>
             <Search size={18} />

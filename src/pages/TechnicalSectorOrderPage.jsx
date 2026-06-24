@@ -1,8 +1,9 @@
-import { ArrowLeft, FilePlus2, Play, Save, SquareCheckBig } from 'lucide-react';
+import { ArrowLeft, Play, Save, SquareCheckBig } from 'lucide-react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import Checklist from '../components/Checklist.jsx';
+import FileUpload from '../components/FileUpload.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { clientService } from '../services/clientService.js';
@@ -74,6 +75,16 @@ export default function TechnicalSectorOrderPage({ sectorName, stageKey, title }
   }
 
   function finishStage() {
+    if (!stage.checklist.length) {
+      window.alert('Crie pelo menos um item no checklist antes de finalizar a etapa.');
+      return;
+    }
+
+    if (stage.checklist.some((item) => !item.done)) {
+      window.alert('Conclua todos os itens do checklist antes de finalizar a etapa.');
+      return;
+    }
+
     if (!stage.report.trim()) {
       window.alert('Descreva o serviço realizado antes de finalizar a etapa.');
       return;
@@ -138,28 +149,20 @@ export default function TechnicalSectorOrderPage({ sectorName, stageKey, title }
         <Checklist
           items={stage.checklist}
           readonly={disabled}
+          editable
           onChange={(checklist) => setStage({ ...stage, checklist })}
         />
         <label className="field">
           <span>Serviço realizado / laudo {stage.sector}</span>
           <textarea value={stage.report} disabled={disabled} onChange={(event) => setStage({ ...stage, report: event.target.value })} />
         </label>
-        <label className="upload-drop">
-          <FilePlus2 size={22} />
-          <span>Anexos mockados</span>
-          <input
-            type="file"
-            multiple
-            disabled={disabled}
-            onChange={(event) => {
-              const fileNames = Array.from(event.target.files || []).map((file) => file.name);
-              setStage({ ...stage, attachments: [...stage.attachments, ...fileNames] });
-            }}
-          />
-        </label>
-        <div className="attachment-list">
-          {stage.attachments.length ? stage.attachments.map((file) => <span key={file}>{file}</span>) : <span>Sem anexos</span>}
-        </div>
+        <FileUpload
+          files={stage.attachments}
+          disabled={disabled}
+          title="Evidências técnicas"
+          description="Fotos, PDFs ou documentos da execução"
+          onChange={(attachments) => setStage({ ...stage, attachments })}
+        />
         <div className="row-actions">
           <Button icon={Play} disabled={disabled || stage.status !== 'Pendente'} onClick={startStage}>
             Iniciar etapa

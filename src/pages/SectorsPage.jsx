@@ -1,4 +1,4 @@
-import { Edit3, Plus, Power } from 'lucide-react';
+import { Edit3, Plus, Power, Save } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
@@ -56,31 +56,39 @@ export default function SectorsPage() {
         </Button>
       </div>
 
-      <div className="grid-3">
+      <div className="vertical-block-stack sector-block-list">
         {sectors
           .slice()
           .sort((a, b) => a.flowOrder - b.flowOrder)
-          .map((sector) => (
-            <Card className="stage-card" key={sector.id}>
-              <div className="stage-header">
+          .map((sector, index) => (
+            <Card className="vertical-block sector-block" interactive={false} key={sector.id}>
+              <div className="technical-block-heading">
                 <div>
-                  <p className="eyebrow">Ordem {sector.flowOrder}</p>
+                  <span className="technical-block-number">Bloco {String(index + 1).padStart(2, '0')}</span>
                   <h3>{sector.name}</h3>
                 </div>
                 <StatusBadge status={sector.status} />
               </div>
-              <p className="muted">{sector.description}</p>
-              <div className="meta-grid">
-                <span>Responsável: {sector.responsible}</span>
-                <span>
-                  Funcionários:{' '}
-                  {sector.employeeIds
-                    ?.map((id) => employees.find((employee) => employee.id === id)?.name)
-                    .filter(Boolean)
-                    .join(', ') || 'Nenhum'}
-                </span>
+
+              <div className="sector-block-content">
+                <div>
+                  <span className="sector-block-label">Descrição</span>
+                  <p>{sector.description}</p>
+                </div>
+                <div className="meta-grid">
+                  <span>Ordem no fluxo: {sector.flowOrder}</span>
+                  <span>Responsável: {sector.responsible}</span>
+                  <span>
+                    Funcionários:{' '}
+                    {sector.employeeIds
+                      ?.map((id) => employees.find((employee) => employee.id === id)?.name)
+                      .filter(Boolean)
+                      .join(', ') || 'Nenhum'}
+                  </span>
+                </div>
               </div>
-              <div className="row-actions">
+
+              <div className="row-actions sector-block-actions">
                 <Button variant="outline" icon={Edit3} onClick={() => openForm(sector)}>
                   Editar
                 </Button>
@@ -145,7 +153,7 @@ export default function SectorsPage() {
             </select>
           </label>
           <div className="form-actions span-2">
-            <Button type="submit">Salvar setor</Button>
+            <Button type="submit" icon={Save}>Salvar setor</Button>
           </div>
         </form>
       </Modal>

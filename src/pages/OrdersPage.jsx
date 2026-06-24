@@ -1,4 +1,4 @@
-import { Eye, Plus, QrCode } from 'lucide-react';
+import { Eye, Plus, QrCode, Save } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button.jsx';
@@ -6,6 +6,7 @@ import Card from '../components/Card.jsx';
 import Input from '../components/Input.jsx';
 import Modal from '../components/Modal.jsx';
 import CpfCnpjInput from '../components/CpfCnpjInput.jsx';
+import FileUpload from '../components/FileUpload.jsx';
 import Select from '../components/Select.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -471,20 +472,13 @@ export default function OrdersPage() {
                 <span>Observações do motor</span>
                 <textarea value={form.motor.notes} onChange={(event) => updateMotor({ notes: event.target.value })} />
               </label>
-              <label className="upload-drop span-2">
-                <span>Fotos/anexos mockados</span>
-                <input
-                  type="file"
-                  multiple
-                  onChange={(event) => {
-                    const fileNames = Array.from(event.target.files || []).map((file) => file.name);
-                    updateMotor({ attachments: [...(form.motor.attachments || []), ...fileNames] });
-                  }}
-                />
-              </label>
-              <div className="attachment-list span-2">
-                {form.motor.attachments?.length ? form.motor.attachments.map((file) => <span key={file}>{file}</span>) : <span>Sem anexos</span>}
-              </div>
+              <FileUpload
+                className="span-2"
+                files={form.motor.attachments || []}
+                title="Fotos e documentos do motor"
+                description="Inclua registros recebidos na abertura da OS"
+                onChange={(attachments) => updateMotor({ attachments })}
+              />
             </>
           )}
 
@@ -509,7 +503,7 @@ export default function OrdersPage() {
             <textarea value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} />
           </label>
           <div className="form-actions span-2">
-            <Button type="submit">Salvar motor e gerar OS</Button>
+            <Button type="submit" icon={Save}>Salvar motor e gerar OS</Button>
           </div>
         </form>
       </Modal>
