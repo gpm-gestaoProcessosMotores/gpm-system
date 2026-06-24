@@ -2,6 +2,7 @@ import { Printer, ScanLine } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Button from '../components/Button.jsx';
+import Card from '../components/Card.jsx';
 import QRCodeCard from '../components/QRCodeCard.jsx';
 import Select from '../components/Select.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -23,14 +24,14 @@ export default function QRCodePage() {
         </div>
       </div>
 
-      <div className="grid-2">
+      <Card className="toolbar-card" interactive={false}>
         <Select
           label="Ordem de Serviço"
           value={selectedId}
           options={orders.map((order) => ({ value: order.id, label: `${order.number} · ${order.trackingCode} · ${order.status}` }))}
           onChange={(event) => setSelectedId(event.target.value)}
         />
-      </div>
+      </Card>
 
       <QRCodeCard order={selectedOrder} />
 

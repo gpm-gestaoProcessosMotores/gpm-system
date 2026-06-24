@@ -1,8 +1,9 @@
-import { FilePlus2, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import Checklist from '../components/Checklist.jsx';
+import FileUpload from '../components/FileUpload.jsx';
 import Select from '../components/Select.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -59,16 +60,22 @@ export default function TechnicalReportsPage() {
 
   return (
     <div className="content-grid">
-      <section>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Registro técnico</p>
-            <h2>Laudo por setor</h2>
-          </div>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Registro técnico</p>
+          <h2>Laudo por setor</h2>
         </div>
+      </div>
 
-        <Card className="stage-card">
-          <form className="form-grid two" onSubmit={saveReport}>
+      <form className="vertical-block-stack" onSubmit={saveReport}>
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 01</span>
+              <h3>Ordem e setor</h3>
+            </div>
+          </div>
+          <div className="form-grid two">
             <Select
               label="Ordem de Serviço"
               value={selectedId}
@@ -76,47 +83,68 @@ export default function TechnicalReportsPage() {
               onChange={(event) => setSelectedId(event.target.value)}
             />
             <Select label="Setor" value={stageKey} options={stageOptions} onChange={(event) => setStageKey(event.target.value)} />
-            <Checklist items={draft.checklist} onChange={(checklist) => setDraft({ ...draft, checklist })} />
-            <label className="field">
-              <span>Descrição do problema</span>
-              <textarea value={draft.report} onChange={(event) => setDraft({ ...draft, report: event.target.value })} required />
-            </label>
-            <label className="upload-drop span-2">
-              <FilePlus2 size={22} />
-              <span>Anexos mockados</span>
-              <input
-                type="file"
-                multiple
-                onChange={(event) => {
-                  const fileNames = Array.from(event.target.files || []).map((file) => file.name);
-                  setDraft({ ...draft, attachments: [...draft.attachments, ...fileNames] });
-                }}
-              />
-            </label>
-            <div className="attachment-list span-2">
-              {draft.attachments.map((file) => (
-                <span key={file}>{file}</span>
-              ))}
-            </div>
-            <div className="form-actions">
-              <Button type="submit" icon={Save}>
-                Salvar laudo
-              </Button>
-            </div>
-          </form>
-        </Card>
-      </section>
-
-      <section>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Laudos registrados</p>
-            <h2>Histórico técnico</h2>
           </div>
+        </Card>
+
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 02</span>
+              <h3>Checklist</h3>
+            </div>
+            <span className="technical-block-count">{draft.checklist.length} item(ns)</span>
+          </div>
+          <Checklist items={draft.checklist} editable onChange={(checklist) => setDraft({ ...draft, checklist })} />
+        </Card>
+
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 03</span>
+              <h3>Descrição do laudo</h3>
+            </div>
+          </div>
+          <label className="field vertical-description-field">
+            <span>Serviço realizado / laudo técnico</span>
+            <textarea value={draft.report} onChange={(event) => setDraft({ ...draft, report: event.target.value })} required />
+          </label>
+        </Card>
+
+        <Card className="vertical-block" interactive={false}>
+          <div className="technical-block-heading">
+            <div>
+              <span className="technical-block-number">Bloco 04</span>
+              <h3>Envio de arquivos</h3>
+            </div>
+            <span className="technical-block-count">{draft.attachments.length} arquivo(s)</span>
+          </div>
+          <FileUpload
+            files={draft.attachments}
+            title="Anexos do laudo"
+            description="Inclua evidências e documentos técnicos"
+            onChange={(attachments) => setDraft({ ...draft, attachments })}
+          />
+        </Card>
+
+        <div className="vertical-block-actions">
+          <Button type="submit" icon={Save}>
+            Salvar laudo
+          </Button>
         </div>
-        <div className="grid-3">
+      </form>
+
+      <Card className="vertical-block vertical-history-block" interactive={false}>
+        <div className="technical-block-heading">
+          <div>
+            <span className="technical-block-number">Bloco 05</span>
+            <h3>Histórico técnico</h3>
+          </div>
+          <span className="technical-block-count">{reports.length} laudo(s)</span>
+        </div>
+
+        <div className="vertical-record-list">
           {reports.map(({ order: reportOrder, key, stage }) => (
-            <Card className="stage-card" key={`${reportOrder.id}-${key}`}>
+            <article className="vertical-record" key={`${reportOrder.id}-${key}`}>
               <div className="stage-header">
                 <div>
                   <p className="eyebrow">{reportOrder.number}</p>
@@ -134,10 +162,11 @@ export default function TechnicalReportsPage() {
                   <span key={file}>{file}</span>
                 ))}
               </div>
-            </Card>
+            </article>
           ))}
+          {!reports.length ? <p className="checklist-empty">Nenhum laudo registrado.</p> : null}
         </div>
-      </section>
+      </Card>
     </div>
   );
 }

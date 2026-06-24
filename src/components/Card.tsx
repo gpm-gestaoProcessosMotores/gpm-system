@@ -24,8 +24,8 @@ export default function Card({ children, className = '', as = 'section', interac
       className={`card bg-card text-card-foreground ${className}`.trim()}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={interactive ? { y: -2 } : undefined}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={interactive ? { y: -1 } : undefined}
     >
       {children}
     </Component>

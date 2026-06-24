@@ -6,7 +6,6 @@ import Card from '../components/Card.jsx';
 import Input from '../components/Input.jsx';
 import OSStatusCard from '../components/OSStatusCard.jsx';
 import OSTimeline from '../components/OSTimeline.jsx';
-import ThemeToggle from '../components/ThemeToggle.jsx';
 import { budgetService } from '../services/budgetService.js';
 import { clientService } from '../services/clientService.js';
 import { motorService } from '../services/motorService.js';
@@ -49,9 +48,6 @@ export default function ClientOrderConsultPage() {
 
   return (
     <main className="client-shell bg-background text-foreground">
-      <div className="public-theme-action">
-        <ThemeToggle />
-      </div>
       <motion.div
         className="client-page content-grid client-consult"
         initial={{ opacity: 0, y: 16 }}

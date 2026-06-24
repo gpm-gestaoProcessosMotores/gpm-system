@@ -1,4 +1,4 @@
-import { Edit3, Plus, Power } from 'lucide-react';
+import { Edit3, Plus, Power, Save } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
@@ -285,7 +285,7 @@ export default function EmployeesPage() {
           </div>
 
           <div className="form-actions span-2">
-            <Button type="submit">Salvar funcionário</Button>
+            <Button type="submit" icon={Save}>Salvar funcionário</Button>
           </div>
         </form>
       </Modal>

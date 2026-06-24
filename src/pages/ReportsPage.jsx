@@ -17,7 +17,14 @@ export default function ReportsPage() {
 
   return (
     <div className="content-grid">
-      <section className="grid-4">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Indicadores</p>
+          <h2>Desempenho operacional</h2>
+        </div>
+      </div>
+
+      <section className="grid-4 metrics-section">
         <Card className="metric-card">
           <span>OS concluídas no mês</span>
           <strong>{report.completedThisMonth}</strong>
@@ -36,7 +43,7 @@ export default function ReportsPage() {
         </Card>
       </section>
 
-      <section className="grid-2">
+      <section className="grid-2 chart-grid">
         <Card className="chart-card">
           <h3>Quantidade de OS por status</h3>
           <ResponsiveContainer width="100%" height={260}>

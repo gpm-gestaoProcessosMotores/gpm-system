@@ -1,4 +1,4 @@
-import { Edit3, Plus, Trash2 } from 'lucide-react';
+import { Edit3, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
@@ -258,7 +258,7 @@ export default function ClientsPage() {
           {message ? <p className="status status-cyan span-2">{message}</p> : null}
 
           <div className="form-actions span-2">
-            <Button type="submit">Salvar cliente</Button>
+            <Button type="submit" icon={Save}>Salvar cliente</Button>
           </div>
         </form>
       </Modal>

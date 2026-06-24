@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { KeyRound, Plus, Save } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import Input from '../components/Input.jsx';
@@ -140,7 +140,7 @@ export default function UsersPage() {
             errors={errors}
           />
           <div className="form-actions">
-            <Button type="submit">Salvar usuário</Button>
+            <Button type="submit" icon={Save}>Salvar usuário</Button>
           </div>
         </form>
       </Modal>
@@ -163,7 +163,7 @@ export default function UsersPage() {
             required
           />
           <div className="form-actions">
-            <Button type="submit" disabled={!newPassword || newPassword !== confirmNewPassword}>
+            <Button type="submit" icon={KeyRound} disabled={!newPassword || newPassword !== confirmNewPassword}>
               Redefinir senha
             </Button>
           </div>

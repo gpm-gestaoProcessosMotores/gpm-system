@@ -1,7 +1,8 @@
-import { Edit3, Plus, Trash2 } from 'lucide-react';
+import { Edit3, Plus, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
+import FileUpload from '../components/FileUpload.jsx';
 import Input from '../components/Input.jsx';
 import Modal from '../components/Modal.jsx';
 import Select from '../components/Select.jsx';
@@ -169,25 +170,16 @@ export default function MotorsPage() {
             <span>Observações</span>
             <textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} />
           </label>
-          <label className="upload-drop span-2">
-            <span>Fotos/anexos mockados</span>
-            <input
-              type="file"
-              multiple
-              onChange={(event) => {
-                const fileNames = Array.from(event.target.files || []).map((file) => file.name);
-                setForm({ ...form, attachments: [...(form.attachments || []), ...fileNames] });
-              }}
-            />
-          </label>
-          <div className="attachment-list span-2">
-            {form.attachments?.map((file) => (
-              <span key={file}>{file}</span>
-            ))}
-          </div>
+          <FileUpload
+            className="span-2"
+            files={form.attachments || []}
+            title="Fotos e documentos do motor"
+            description="Inclua registros de identificação e inspeção"
+            onChange={(attachments) => setForm({ ...form, attachments })}
+          />
           {error ? <p className="form-error span-2">{error}</p> : null}
           <div className="form-actions span-2">
-            <Button type="submit">Salvar motor</Button>
+            <Button type="submit" icon={Save}>Salvar motor</Button>
           </div>
         </form>
       </Modal>

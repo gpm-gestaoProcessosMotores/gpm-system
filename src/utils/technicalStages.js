@@ -4,24 +4,6 @@ export const technicalSectorByProfile = {
   Técnico: '',
 };
 
-export const technicalChecklists = {
-  mecanica: [
-    { label: 'Inspeção mecânica realizada', done: false },
-    { label: 'Troca ou ajuste mecânico realizado', done: false },
-    { label: 'Teste mecânico concluído', done: false },
-  ],
-  usinagem: [
-    { label: 'Medição dimensional realizada', done: false },
-    { label: 'Serviço de torno/fresa realizado', done: false },
-    { label: 'Peças recuperadas e conferidas', done: false },
-  ],
-  eletrica: [
-    { label: 'Teste de isolamento realizado', done: false },
-    { label: 'Bobinagem e ligações verificadas', done: false },
-    { label: 'Teste elétrico final realizado', done: false },
-  ],
-};
-
 export const stageTemplates = {
   mecanica: {
     sector: 'Mecânica',
@@ -30,7 +12,7 @@ export const stageTemplates = {
     startedAt: '',
     finishedAt: '',
     report: '',
-    checklist: technicalChecklists.mecanica,
+    checklist: [],
     attachments: [],
   },
   usinagem: {
@@ -40,7 +22,7 @@ export const stageTemplates = {
     startedAt: '',
     finishedAt: '',
     report: '',
-    checklist: technicalChecklists.usinagem,
+    checklist: [],
     attachments: [],
   },
   eletrica: {
@@ -50,7 +32,7 @@ export const stageTemplates = {
     startedAt: '',
     finishedAt: '',
     report: '',
-    checklist: technicalChecklists.eletrica,
+    checklist: [],
     attachments: [],
   },
 };
@@ -63,15 +45,15 @@ export function getTechnicalSectorByProfile(profile, fallbackSector = '') {
   return technicalSectorByProfile[profile] || fallbackSector || '';
 }
 
-export function normalizeStageChecklist(stageKey, checklist = [], stageStatus = 'Pendente') {
+export function normalizeStageChecklist(_stageKey, checklist = []) {
   const currentItems = Array.isArray(checklist) ? checklist : [];
-  const checkedLabels = new Set(currentItems.filter((item) => item.done).map((item) => item.label));
-  const markFinished = stageStatus === 'Concluída' && currentItems.some((item) => item.done);
 
-  return (technicalChecklists[stageKey] || []).map((item) => ({
-    ...item,
-    done: checkedLabels.has(item.label) || markFinished,
-  }));
+  return currentItems
+    .filter((item) => String(item?.label || '').trim())
+    .map((item) => ({
+      label: String(item.label).trim(),
+      done: Boolean(item.done),
+    }));
 }
 
 export function normalizeTechnicalStages(stages = {}) {

@@ -77,11 +77,18 @@ export default function SearchPage() {
 
   return (
     <div className="content-grid">
-      <Card className="stage-card">
-        <div className="section-heading">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Consulta</p>
+          <h2>Pesquisa de ordens</h2>
+        </div>
+      </div>
+
+      <Card className="stage-card filter-panel">
+        <div className="panel-heading">
           <div>
-            <p className="eyebrow">Consulta</p>
-            <h2>Pesquisar OS</h2>
+            <p className="eyebrow">Filtros</p>
+            <h3>Refine os resultados</h3>
           </div>
         </div>
         <form className="form-grid two" onSubmit={(event) => event.preventDefault()}>

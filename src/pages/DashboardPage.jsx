@@ -22,16 +22,13 @@ export default function DashboardPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">Visão operacional</p>
-          <h2>Controle de motores, setores e prazos em uma única tela</h2>
-          <p>
-            Acompanhe o fluxo técnico da oficina, identifique gargalos e mantenha o administrativo pronto para gerar
-            orçamento.
-          </p>
+          <h2>Visão geral da oficina</h2>
+          <p>Acompanhe ordens, etapas técnicas e prazos com foco no que exige ação.</p>
         </div>
         <div className="dashboard-hero-panel">
-          <span>OS no fluxo técnico</span>
+          <span>Em execução</span>
           <strong>{dashboard.inProgress}</strong>
-          <small>Mecânica, Usinagem e Elétrica</small>
+          <small>OS no fluxo técnico</small>
         </div>
       </section>
 
